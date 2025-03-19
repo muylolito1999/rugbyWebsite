@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pannello Admin - Torneo Rugby</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background-color: #1a237e;
+            color: white;
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .content-section {
+            display: none;
+            padding: 20px 0;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .admin-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .table-responsive {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="text-center mb-4">
+                    <h4>Pannello Admin</h4>
+                    <p>Torneo Rugby</p>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#squadre" data-section="squadre">
+                            <i class="fas fa-users"></i> Squadre
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#partite" data-section="partite">
+                            <i class="fas fa-futbol"></i> Partite
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#classifica" data-section="classifica">
+                            <i class="fas fa-trophy"></i> Classifica
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contenuti" data-section="contenuti">
+                            <i class="fas fa-newspaper"></i> Contenuti
+                        </a>
+                    </li>
+                    <li class="nav-item mt-5">
+                        <a class="nav-link text-danger" href="#" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Contenuto principale -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Dashboard -->
+                <div id="dashboard" class="content-section active">
+                    <div class="admin-header d-flex justify-content-between align-items-center">
+                        <h2>Dashboard</h2>
+                        <span>Benvenuto, Admin</span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Totale Squadre</h5>
+                                    <p class="card-text display-4" id="total-teams">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Partite Giocate</h5>
+                                    <p class="card-text display-4" id="total-matches">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Nuove Iscrizioni</h5>
+                                    <p class="card-text display-4" id="new-registrations">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestione Squadre -->
+                <div id="squadre" class="content-section">
+                    <div class="admin-header d-flex justify-content-between align-items-center">
+                        <h2>Gestione Squadre</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTeamModal">
+                            <i class="fas fa-plus"></i> Aggiungi Squadra
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome Squadra</th>
+                                    <th>Categoria</th>
+                                    <th>Email</th>
+                                    <th>Telefono</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teams-table-body">
+                                <!-- I dati delle squadre verranno inseriti qui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Gestione Partite -->
+                <div id="partite" class="content-section">
+                    <div class="admin-header d-flex justify-content-between align-items-center">
+                        <h2>Gestione Partite</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMatchModal">
+                            <i class="fas fa-plus"></i> Aggiungi Partita
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data</th>
+                                    <th>Squadra Casa</th>
+                                    <th>Squadra Ospite</th>
+                                    <th>Risultato</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="matches-table-body">
+                                <!-- I dati delle partite verranno inseriti qui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Gestione Classifica -->
+                <div id="classifica" class="content-section">
+                    <div class="admin-header d-flex justify-content-between align-items-center">
+                        <h2>Gestione Classifica</h2>
+                        <button class="btn btn-primary" id="update-standings-btn">
+                            <i class="fas fa-sync"></i> Aggiorna Classifica
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Posizione</th>
+                                    <th>Squadra</th>
+                                    <th>Punti</th>
+                                    <th>Partite</th>
+                                    <th>Vinte</th>
+                                    <th>Perse</th>
+                                    <th>Mete Fatte</th>
+                                    <th>Mete Subite</th>
+                                </tr>
+                            </thead>
+                            <tbody id="standings-table-body">
+                                <!-- I dati della classifica verranno inseriti qui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Gestione Contenuti -->
+                <div id="contenuti" class="content-section">
+                    <div class="admin-header d-flex justify-content-between align-items-center">
+                        <h2>Gestione Contenuti</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContentModal">
+                            <i class="fas fa-plus"></i> Aggiungi Contenuto
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Titolo</th>
+                                    <th>Data</th>
+                                    <th>Tipo</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="content-table-body">
+                                <!-- I dati dei contenuti verranno inseriti qui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Aggiungi Squadra -->
+    <div class="modal fade" id="addTeamModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aggiungi Squadra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-team-form">
+                        <div class="mb-3">
+                            <label for="team-name" class="form-label">Nome Squadra</label>
+                            <input type="text" class="form-control" id="team-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="team-category" class="form-label">Categoria</label>
+                            <select class="form-select" id="team-category" required>
+                                <option value="">Seleziona categoria</option>
+                                <option value="senior">Senior</option>
+                                <option value="junior">Junior</option>
+                                <option value="amatori">Amatori</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="team-email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="team-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="team-phone" class="form-label">Telefono</label>
+                            <input type="tel" class="form-control" id="team-phone" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="save-team-btn">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Aggiungi Partita -->
+    <div class="modal fade" id="addMatchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aggiungi Partita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-match-form">
+                        <div class="mb-3">
+                            <label for="match-date" class="form-label">Data e Ora</label>
+                            <input type="datetime-local" class="form-control" id="match-date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="home-team" class="form-label">Squadra Casa</label>
+                            <select class="form-select" id="home-team" required>
+                                <option value="">Seleziona squadra</option>
+                                <!-- Le opzioni saranno aggiunte dinamicamente -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="away-team" class="form-label">Squadra Ospite</label>
+                            <select class="form-select" id="away-team" required>
+                                <option value="">Seleziona squadra</option>
+                                <!-- Le opzioni saranno aggiunte dinamicamente -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Risultato (lasciare vuoto se non ancora giocata)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="home-score" placeholder="Casa" min="0">
+                                <span class="input-group-text">-</span>
+                                <input type="number" class="form-control" id="away-score" placeholder="Ospite" min="0">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="save-match-btn">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Aggiungi Contenuto -->
+    <div class="modal fade" id="addContentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aggiungi Contenuto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-content-form">
+                        <div class="mb-3">
+                            <label for="content-title" class="form-label">Titolo</label>
+                            <input type="text" class="form-control" id="content-title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content-type" class="form-label">Tipo</label>
+                            <select class="form-select" id="content-type" required>
+                                <option value="">Seleziona tipo</option>
+                                <option value="news">News</option>
+                                <option value="article">Articolo</option>
+                                <option value="announcement">Annuncio</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content-text" class="form-label">Contenuto</label>
+                            <textarea class="form-control" id="content-text" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content-image" class="form-label">URL Immagine (opzionale)</label>
+                            <input type="url" class="form-control" id="content-image">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="save-content-btn">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html> 
