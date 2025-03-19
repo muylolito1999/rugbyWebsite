@@ -46,12 +46,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             // Prepara i dati per l'email
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('it-IT', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
             const templateParams = {
                 to_email: 'muylolito1999@gmail.com',
                 nomeSquadra: document.getElementById('nome-squadra').value,
                 categoria: document.getElementById('categoria').value,
                 email: document.getElementById('email').value,
-                telefono: document.getElementById('telefono').value
+                telefono: document.getElementById('telefono').value,
+                date: dateStr
             };
 
             // Invia l'email usando il tuo servizio e template
