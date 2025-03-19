@@ -13,11 +13,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'it',
-        initialView: 'dayGridMonth',
+        initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            right: 'dayGridMonth,listMonth'
+        },
+        views: {
+            dayGridMonth: {
+                titleFormat: { year: 'numeric', month: 'long' }
+            },
+            listMonth: {
+                titleFormat: { year: 'numeric', month: 'long' }
+            }
+        },
+        height: 'auto',
+        expandRows: true,
+        windowResize: function(view) {
+            if (window.innerWidth < 768) {
+                calendar.changeView('listMonth');
+            } else {
+                calendar.changeView('dayGridMonth');
+            }
         },
         events: [
             {

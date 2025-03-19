@@ -50,6 +50,9 @@ h2 {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
 }
 
 .fc-event {
@@ -79,4 +82,45 @@ h2 {
 .card-img-top {
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
+}
+
+/* Stili per il calendario responsive */
+@media screen and (max-width: 768px) {
+    .fc {
+        font-size: 14px; /* Riduciamo la dimensione del font su mobile */
+    }
+    
+    .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.2em;
+        margin: 5px 0;
+    }
+
+    .fc .fc-button {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.9em;
+    }
+
+    .fc .fc-toolbar.fc-header-toolbar {
+        margin-bottom: 0.5em;
+    }
+
+    .fc .fc-view-harness {
+        height: auto !important;
+    }
+    
+    /* Nascondi alcuni elementi su mobile */
+    .fc .fc-toolbar.fc-header-toolbar .fc-toolbar-chunk:last-child {
+        display: none;
+    }
+}
+
+/* Stili per le card della galleria */
+.card img.card-img-top {
+    height: 250px;
+    object-fit: cover;
 } 
