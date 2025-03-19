@@ -43,8 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Popola le tabelle
     renderTeams();
     renderMatches();
+    renderReferees();
     renderStandings();
     renderContents();
+    updateStatistics();
 
     // Gestione del form per aggiungere una squadra
     document.getElementById('save-team-btn').addEventListener('click', function() {
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const teamCategory = document.getElementById('team-category').value;
         const teamEmail = document.getElementById('team-email').value;
         const teamPhone = document.getElementById('team-phone').value;
+        const teamId = this.getAttribute('data-team-id') || '';
         
         if (!teamName || !teamCategory || !teamEmail || !teamPhone) {
             alert('Tutti i campi sono obbligatori');
@@ -60,36 +63,61 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
         
-        const newTeam = {
-            id: generateId(),
-            name: teamName,
-            category: teamCategory,
-            email: teamEmail,
-            phone: teamPhone
-        };
+        if (teamId) {
+            // Modalità modifica
+            const index = teams.findIndex(team => team.id === teamId);
+            if (index !== -1) {
+                teams[index] = {
+                    id: teamId,
+                    name: teamName,
+                    category: teamCategory,
+                    email: teamEmail,
+                    phone: teamPhone
+                };
+            }
+        } else {
+            // Modalità aggiunta
+            const newTeam = {
+                id: generateId(),
+                name: teamName,
+                category: teamCategory,
+                email: teamEmail,
+                phone: teamPhone
+            };
+            
+            teams.push(newTeam);
+        }
         
-        teams.push(newTeam);
         localStorage.setItem('rugbyTeams', JSON.stringify(teams));
         
         // Aggiorna la visualizzazione
         renderTeams();
         updateDashboard();
+        populateTeamSelects();
+        calculateStandings();
+        renderStandings();
+        updateStatistics();
         
         // Chiudi il modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('addTeamModal'));
         modal.hide();
         
-        // Reset del form
+        // Reset del form e degli attributi data
         document.getElementById('add-team-form').reset();
+        this.removeAttribute('data-team-id');
+        
+        // Ripristina il titolo del modal
+        document.querySelector('#addTeamModal .modal-title').textContent = 'Aggiungi Squadra';
     });
 
-    // Gestione del form per aggiungere una partita
+    // Gestione del form per aggiungere/modificare una partita
     document.getElementById('save-match-btn').addEventListener('click', function() {
         const matchDate = document.getElementById('match-date').value;
         const homeTeam = document.getElementById('home-team').value;
         const awayTeam = document.getElementById('away-team').value;
-        const homeScore = document.getElementById('home-score').value;
-        const awayScore = document.getElementById('away-score').value;
+        const referee = document.getElementById('match-referee').value;
+        const location = document.getElementById('match-location').value;
+        const matchId = this.getAttribute('data-match-id') || '';
         
         if (!matchDate || !homeTeam || !awayTeam) {
             alert('Data, squadra casa e squadra ospite sono obbligatori');
@@ -103,66 +131,99 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
         
-        const newMatch = {
-            id: generateId(),
-            date: matchDate,
-            homeTeam: homeTeam,
-            awayTeam: awayTeam,
-            homeScore: homeScore ? parseInt(homeScore) : null,
-            awayScore: awayScore ? parseInt(awayScore) : null,
-            played: homeScore !== '' && awayScore !== '',
-            status: 'disputata', // può essere 'disputata' o 'sospesa'
-            rugbyDetails: {
-                home: {
-                    periodo1: {
-                        mete: 0,
-                        trasformazioni: 0,
-                        punizioni: 0,
-                        drop: 0
+        if (matchId) {
+            // Modalità modifica
+            const index = matches.findIndex(match => match.id === matchId);
+            if (index !== -1) {
+                // Preserva i dettagli del rugby e il punteggio
+                const rugbyDetails = matches[index].rugbyDetails;
+                const homeScore = matches[index].homeScore;
+                const awayScore = matches[index].awayScore;
+                const played = matches[index].played;
+                const status = matches[index].status;
+                
+                matches[index] = {
+                    id: matchId,
+                    date: matchDate,
+                    homeTeam: homeTeam,
+                    awayTeam: awayTeam,
+                    referee: referee,
+                    location: location,
+                    homeScore: homeScore,
+                    awayScore: awayScore,
+                    played: played,
+                    status: status,
+                    rugbyDetails: rugbyDetails
+                };
+            }
+        } else {
+            // Modalità aggiunta
+            const newMatch = {
+                id: generateId(),
+                date: matchDate,
+                homeTeam: homeTeam,
+                awayTeam: awayTeam,
+                referee: referee,
+                location: location,
+                homeScore: 0,
+                awayScore: 0,
+                played: false,
+                status: 'disputata',
+                rugbyDetails: {
+                    home: {
+                        periodo1: {
+                            mete: 0,
+                            trasformazioni: 0,
+                            punizioni: 0,
+                            drop: 0
+                        },
+                        periodo2: {
+                            mete: 0,
+                            trasformazioni: 0,
+                            punizioni: 0,
+                            drop: 0
+                        }
                     },
-                    periodo2: {
-                        mete: 0,
-                        trasformazioni: 0,
-                        punizioni: 0,
-                        drop: 0
-                    }
-                },
-                away: {
-                    periodo1: {
-                        mete: 0,
-                        trasformazioni: 0,
-                        punizioni: 0,
-                        drop: 0
-                    },
-                    periodo2: {
-                        mete: 0,
-                        trasformazioni: 0,
-                        punizioni: 0,
-                        drop: 0
+                    away: {
+                        periodo1: {
+                            mete: 0,
+                            trasformazioni: 0,
+                            punizioni: 0,
+                            drop: 0
+                        },
+                        periodo2: {
+                            mete: 0,
+                            trasformazioni: 0,
+                            punizioni: 0,
+                            drop: 0
+                        }
                     }
                 }
-            }
-        };
+            };
+            
+            matches.push(newMatch);
+        }
         
-        matches.push(newMatch);
         localStorage.setItem('rugbyMatches', JSON.stringify(matches));
         
         // Aggiorna la visualizzazione
         renderMatches();
         updateDashboard();
         updateCalendar();
+        calculateStandings();
+        renderStandings();
+        updateStatistics();
         
         // Chiudi il modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('addMatchModal'));
         modal.hide();
         
-        // Reset del form
+        // Reset del form e degli attributi data
         document.getElementById('add-match-form').reset();
+        this.removeAttribute('data-match-id');
         
-        // Chiedi all'utente se vuole inserire i dettagli del rugby
-        if (confirm('Vuoi inserire i dettagli delle mete, trasformazioni, punizioni e drop per questa partita?')) {
-            openRugbyResultModal(newMatch.id);
-        }
+        // Ripristina il titolo del modal
+        document.querySelector('#addMatchModal .modal-title').textContent = 'Aggiungi Partita';
     });
 
     // Gestione del form per aggiungere un contenuto
@@ -207,6 +268,68 @@ document.addEventListener('DOMContentLoaded', function() {
         calculateStandings();
         renderStandings();
         alert('Classifica aggiornata con successo');
+    });
+
+    // Gestione del form per aggiungere/modificare un arbitro
+    document.getElementById('save-referee-btn').addEventListener('click', function() {
+        const refereeName = document.getElementById('referee-name').value;
+        const refereeSurname = document.getElementById('referee-surname').value;
+        const refereeEmail = document.getElementById('referee-email').value;
+        const refereePhone = document.getElementById('referee-phone').value;
+        const refereeLevel = document.getElementById('referee-level').value;
+        const refereeId = document.getElementById('referee-id').value;
+        
+        if (!refereeName || !refereeSurname || !refereeEmail || !refereePhone || !refereeLevel) {
+            alert('Tutti i campi sono obbligatori');
+            return;
+        }
+        
+        const referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
+        
+        if (refereeId) {
+            // Modalità modifica
+            const index = referees.findIndex(ref => ref.id === refereeId);
+            if (index !== -1) {
+                referees[index] = {
+                    id: refereeId,
+                    name: refereeName,
+                    surname: refereeSurname,
+                    email: refereeEmail,
+                    phone: refereePhone,
+                    level: refereeLevel
+                };
+            }
+        } else {
+            // Modalità aggiunta
+            const newReferee = {
+                id: generateId(),
+                name: refereeName,
+                surname: refereeSurname,
+                email: refereeEmail,
+                phone: refereePhone,
+                level: refereeLevel
+            };
+            
+            referees.push(newReferee);
+        }
+        
+        localStorage.setItem('rugbyReferees', JSON.stringify(referees));
+        
+        // Aggiorna la visualizzazione
+        renderReferees();
+        populateRefereeSelect();
+        updateStatistics();
+        
+        // Chiudi il modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addRefereeModal'));
+        modal.hide();
+        
+        // Reset del form
+        document.getElementById('add-referee-form').reset();
+        document.getElementById('referee-id').value = '';
+        
+        // Ripristina il titolo del modal
+        document.querySelector('#addRefereeModal .modal-title').textContent = 'Aggiungi Arbitro';
     });
 
     // Popola i select delle squadre nei form
@@ -287,6 +410,15 @@ function initData() {
     if (!localStorage.getItem('rugbyStandings')) {
         calculateStandings();
     }
+
+    // Arbitri
+    if (!localStorage.getItem('rugbyReferees')) {
+        const exampleReferees = [
+            { id: generateId(), name: 'Marco', surname: 'Rossi', email: 'marco.rossi@example.com', phone: '3331112223', level: 'national' },
+            { id: generateId(), name: 'Luigi', surname: 'Bianchi', email: 'luigi.bianchi@example.com', phone: '3334445556', level: 'regional' }
+        ];
+        localStorage.setItem('rugbyReferees', JSON.stringify(exampleReferees));
+    }
 }
 
 // Aggiorna la dashboard
@@ -317,6 +449,9 @@ function renderTeams() {
             <td>${team.email}</td>
             <td>${team.phone}</td>
             <td>
+                <button class="btn btn-sm btn-primary edit-team" data-id="${team.id}">
+                    <i class="fas fa-edit"></i>
+                </button>
                 <button class="btn btn-sm btn-danger delete-team" data-id="${team.id}">
                     <i class="fas fa-trash"></i>
                 </button>
@@ -335,12 +470,46 @@ function renderTeams() {
             }
         });
     });
+
+    // Aggiungi event listener ai pulsanti di modifica
+    document.querySelectorAll('.edit-team').forEach(button => {
+        button.addEventListener('click', function() {
+            const teamId = this.getAttribute('data-id');
+            editTeam(teamId);
+        });
+    });
+}
+
+// Funzione per modificare una squadra
+function editTeam(teamId) {
+    const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+    const team = teams.find(t => t.id === teamId);
+    
+    if (!team) return;
+    
+    // Popola il form del modal
+    document.getElementById('team-name').value = team.name;
+    document.getElementById('team-category').value = team.category;
+    document.getElementById('team-email').value = team.email;
+    document.getElementById('team-phone').value = team.phone;
+    
+    // Aggiungi l'ID della squadra come attributo data al pulsante di salvataggio
+    const saveButton = document.getElementById('save-team-btn');
+    saveButton.setAttribute('data-team-id', teamId);
+    
+    // Cambia il titolo del modal
+    document.querySelector('#addTeamModal .modal-title').textContent = 'Modifica Squadra';
+    
+    // Apri il modal
+    const modal = new bootstrap.Modal(document.getElementById('addTeamModal'));
+    modal.show();
 }
 
 // Popola la tabella delle partite
 function renderMatches() {
     const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
     const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+    const referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
     const tableBody = document.getElementById('matches-table-body');
     
     tableBody.innerHTML = '';
@@ -348,6 +517,7 @@ function renderMatches() {
     matches.forEach(match => {
         const homeTeam = teams.find(team => team.id === match.homeTeam);
         const awayTeam = teams.find(team => team.id === match.awayTeam);
+        const referee = referees.find(ref => ref.id === match.referee);
         
         if (!homeTeam || !awayTeam) return;
         
@@ -424,8 +594,7 @@ function renderMatches() {
     document.querySelectorAll('.edit-match').forEach(button => {
         button.addEventListener('click', function() {
             const matchId = this.getAttribute('data-id');
-            // Funzionalità di modifica da implementare
-            alert('Funzionalità di modifica da implementare');
+            editMatch(matchId);
         });
     });
     
@@ -435,6 +604,32 @@ function renderMatches() {
             openRugbyResultModal(matchId);
         });
     });
+}
+
+// Funzione per modificare una partita
+function editMatch(matchId) {
+    const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+    const match = matches.find(m => m.id === matchId);
+    
+    if (!match) return;
+    
+    // Popola il form del modal
+    document.getElementById('match-date').value = match.date;
+    document.getElementById('home-team').value = match.homeTeam;
+    document.getElementById('away-team').value = match.awayTeam;
+    document.getElementById('match-referee').value = match.referee || '';
+    document.getElementById('match-location').value = match.location || '';
+    
+    // Aggiungi l'ID della partita come attributo data al pulsante di salvataggio
+    const saveButton = document.getElementById('save-match-btn');
+    saveButton.setAttribute('data-match-id', matchId);
+    
+    // Cambia il titolo del modal
+    document.querySelector('#addMatchModal .modal-title').textContent = 'Modifica Partita';
+    
+    // Apri il modal
+    const modal = new bootstrap.Modal(document.getElementById('addMatchModal'));
+    modal.show();
 }
 
 // Popola la tabella della classifica
@@ -704,6 +899,9 @@ function populateTeamSelects() {
         awayOption.textContent = team.name;
         awayTeamSelect.appendChild(awayOption);
     });
+
+    // Popola anche il select degli arbitri
+    populateRefereeSelect();
 }
 
 // Aggiorna il calendario sul frontend
@@ -965,4 +1163,266 @@ document.getElementById('save-rugby-result-btn').addEventListener('click', funct
     modal.hide();
     
     alert('Risultato salvato con successo!');
-}); 
+});
+
+// Popola la tabella degli arbitri
+function renderReferees() {
+    const referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
+    const tableBody = document.getElementById('referees-table-body');
+    
+    tableBody.innerHTML = '';
+    
+    referees.forEach(referee => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td>${referee.id.substring(0, 6)}...</td>
+            <td>${referee.name}</td>
+            <td>${referee.surname}</td>
+            <td>${referee.email}</td>
+            <td>${referee.phone}</td>
+            <td>
+                <button class="btn btn-sm btn-primary edit-referee" data-id="${referee.id}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger delete-referee" data-id="${referee.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+    
+    // Aggiungi event listener ai pulsanti
+    document.querySelectorAll('.delete-referee').forEach(button => {
+        button.addEventListener('click', function() {
+            const refereeId = this.getAttribute('data-id');
+            if (confirm('Sei sicuro di voler eliminare questo arbitro?')) {
+                deleteReferee(refereeId);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.edit-referee').forEach(button => {
+        button.addEventListener('click', function() {
+            const refereeId = this.getAttribute('data-id');
+            editReferee(refereeId);
+        });
+    });
+}
+
+// Elimina un arbitro
+function deleteReferee(refereeId) {
+    let referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
+    referees = referees.filter(referee => referee.id !== refereeId);
+    localStorage.setItem('rugbyReferees', JSON.stringify(referees));
+    
+    // Aggiorna anche le partite che coinvolgono questo arbitro
+    let matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+    matches = matches.map(match => {
+        if (match.referee === refereeId) {
+            match.referee = '';
+        }
+        return match;
+    });
+    localStorage.setItem('rugbyMatches', JSON.stringify(matches));
+    
+    // Aggiorna la visualizzazione
+    renderReferees();
+    renderMatches();
+    populateRefereeSelect();
+    updateStatistics();
+}
+
+// Modifica un arbitro
+function editReferee(refereeId) {
+    const referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
+    const referee = referees.find(ref => ref.id === refereeId);
+    
+    if (!referee) return;
+    
+    // Popola il form
+    document.getElementById('referee-id').value = referee.id;
+    document.getElementById('referee-name').value = referee.name;
+    document.getElementById('referee-surname').value = referee.surname;
+    document.getElementById('referee-email').value = referee.email;
+    document.getElementById('referee-phone').value = referee.phone;
+    document.getElementById('referee-level').value = referee.level;
+    
+    // Cambia il titolo del modal
+    document.querySelector('#addRefereeModal .modal-title').textContent = 'Modifica Arbitro';
+    
+    // Apri il modal
+    const modal = new bootstrap.Modal(document.getElementById('addRefereeModal'));
+    modal.show();
+}
+
+// Popola il select degli arbitri
+function populateRefereeSelect() {
+    const referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
+    const refereeSelect = document.getElementById('match-referee');
+    
+    // Rimuovi tutte le opzioni tranne la prima
+    while (refereeSelect.options.length > 1) {
+        refereeSelect.remove(1);
+    }
+    
+    // Aggiungi le opzioni
+    referees.forEach(referee => {
+        const option = document.createElement('option');
+        option.value = referee.id;
+        option.textContent = `${referee.name} ${referee.surname}`;
+        refereeSelect.appendChild(option);
+    });
+}
+
+// Calcola e aggiorna le statistiche
+function updateStatistics() {
+    const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+    const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+    const referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
+    const playedMatches = matches.filter(match => match.played);
+    
+    // Statistiche globali
+    const totalMatches = playedMatches.length;
+    let totalTries = 0;
+    let totalPoints = 0;
+    let maxScore = 0;
+    
+    // Statistiche per squadra
+    const teamStats = teams.map(team => {
+        const teamMatches = playedMatches.filter(match => 
+            match.homeTeam === team.id || match.awayTeam === team.id);
+        
+        let totalTeamTries = 0;
+        let totalTeamPoints = 0;
+        
+        teamMatches.forEach(match => {
+            if (match.rugbyDetails) {
+                if (match.homeTeam === team.id) {
+                    // La squadra è quella di casa
+                    const homeMete = match.rugbyDetails.home.periodo1.mete + match.rugbyDetails.home.periodo2.mete;
+                    totalTeamTries += homeMete;
+                    
+                    const homePoints = 
+                        (match.rugbyDetails.home.periodo1.mete + match.rugbyDetails.home.periodo2.mete) * 5 +
+                        (match.rugbyDetails.home.periodo1.trasformazioni + match.rugbyDetails.home.periodo2.trasformazioni) * 2 +
+                        (match.rugbyDetails.home.periodo1.punizioni + match.rugbyDetails.home.periodo2.punizioni) * 3 +
+                        (match.rugbyDetails.home.periodo1.drop + match.rugbyDetails.home.periodo2.drop) * 3;
+                    
+                    totalTeamPoints += homePoints;
+                    maxScore = Math.max(maxScore, homePoints);
+                } else {
+                    // La squadra è quella ospite
+                    const awayMete = match.rugbyDetails.away.periodo1.mete + match.rugbyDetails.away.periodo2.mete;
+                    totalTeamTries += awayMete;
+                    
+                    const awayPoints = 
+                        (match.rugbyDetails.away.periodo1.mete + match.rugbyDetails.away.periodo2.mete) * 5 +
+                        (match.rugbyDetails.away.periodo1.trasformazioni + match.rugbyDetails.away.periodo2.trasformazioni) * 2 +
+                        (match.rugbyDetails.away.periodo1.punizioni + match.rugbyDetails.away.periodo2.punizioni) * 3 +
+                        (match.rugbyDetails.away.periodo1.drop + match.rugbyDetails.away.periodo2.drop) * 3;
+                    
+                    totalTeamPoints += awayPoints;
+                    maxScore = Math.max(maxScore, awayPoints);
+                }
+            }
+        });
+        
+        totalTries += totalTeamTries;
+        totalPoints += totalTeamPoints;
+        
+        const efficiency = teamMatches.length > 0 ? (totalTeamPoints / teamMatches.length).toFixed(2) : 0;
+        
+        return {
+            id: team.id,
+            name: team.name,
+            matches: teamMatches.length,
+            tries: totalTeamTries,
+            points: totalTeamPoints,
+            efficiency: efficiency
+        };
+    });
+    
+    // Statistiche per arbitro
+    const refereeStats = referees.map(referee => {
+        const refereeMatches = playedMatches.filter(match => match.referee === referee.id);
+        
+        let totalRefereeTries = 0;
+        let totalRefereePoints = 0;
+        
+        refereeMatches.forEach(match => {
+            if (match.rugbyDetails) {
+                const homeMete = match.rugbyDetails.home.periodo1.mete + match.rugbyDetails.home.periodo2.mete;
+                const awayMete = match.rugbyDetails.away.periodo1.mete + match.rugbyDetails.away.periodo2.mete;
+                totalRefereeTries += homeMete + awayMete;
+                
+                const homePoints = 
+                    (match.rugbyDetails.home.periodo1.mete + match.rugbyDetails.home.periodo2.mete) * 5 +
+                    (match.rugbyDetails.home.periodo1.trasformazioni + match.rugbyDetails.home.periodo2.trasformazioni) * 2 +
+                    (match.rugbyDetails.home.periodo1.punizioni + match.rugbyDetails.home.periodo2.punizioni) * 3 +
+                    (match.rugbyDetails.home.periodo1.drop + match.rugbyDetails.home.periodo2.drop) * 3;
+                
+                const awayPoints = 
+                    (match.rugbyDetails.away.periodo1.mete + match.rugbyDetails.away.periodo2.mete) * 5 +
+                    (match.rugbyDetails.away.periodo1.trasformazioni + match.rugbyDetails.away.periodo2.trasformazioni) * 2 +
+                    (match.rugbyDetails.away.periodo1.punizioni + match.rugbyDetails.away.periodo2.punizioni) * 3 +
+                    (match.rugbyDetails.away.periodo1.drop + match.rugbyDetails.away.periodo2.drop) * 3;
+                
+                totalRefereePoints += homePoints + awayPoints;
+            }
+        });
+        
+        const avgPoints = refereeMatches.length > 0 ? (totalRefereePoints / refereeMatches.length).toFixed(2) : 0;
+        
+        return {
+            id: referee.id,
+            name: `${referee.name} ${referee.surname}`,
+            matches: refereeMatches.length,
+            tries: totalRefereeTries,
+            avgPoints: avgPoints
+        };
+    });
+    
+    // Aggiorna le tabelle e i contatori
+    // Tabella squadre
+    const teamStatsTable = document.getElementById('team-stats-table');
+    teamStatsTable.innerHTML = '';
+    
+    teamStats.sort((a, b) => b.points - a.points).forEach(stat => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td>${stat.name}</td>
+            <td>${stat.matches}</td>
+            <td>${stat.tries}</td>
+            <td>${stat.efficiency}</td>
+        `;
+        
+        teamStatsTable.appendChild(row);
+    });
+    
+    // Tabella arbitri
+    const refereeStatsTable = document.getElementById('referee-stats-table');
+    refereeStatsTable.innerHTML = '';
+    
+    refereeStats.sort((a, b) => b.matches - a.matches).forEach(stat => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td>${stat.name}</td>
+            <td>${stat.matches}</td>
+            <td>${stat.tries}</td>
+            <td>${stat.avgPoints}</td>
+        `;
+        
+        refereeStatsTable.appendChild(row);
+    });
+    
+    // Statistiche globali
+    document.getElementById('total-matches-stat').textContent = totalMatches;
+    document.getElementById('total-tries-stat').textContent = totalTries;
+    document.getElementById('avg-points-stat').textContent = totalMatches > 0 ? (totalPoints / totalMatches).toFixed(2) : 0;
+    document.getElementById('max-score-stat').textContent = maxScore;
+} 
