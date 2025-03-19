@@ -106,33 +106,104 @@
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <!-- Dashboard -->
                 <div id="dashboard" class="content-section active">
-                    <div class="admin-header d-flex justify-content-between align-items-center">
+                    <div class="admin-header">
                         <h2>Dashboard</h2>
-                        <span>Benvenuto, Admin</span>
                     </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-primary text-white h-100">
+                                <div class="card-body text-center">
+                                    <h3 id="total-teams">0</h3>
+                                    <p class="mb-0">Squadre</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-success text-white h-100">
+                                <div class="card-body text-center">
+                                    <h3 id="total-matches">0</h3>
+                                    <p class="mb-0">Partite Totali</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-info text-white h-100">
+                                <div class="card-body text-center">
+                                    <h3 id="total-referees">0</h3>
+                                    <p class="mb-0">Arbitri</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-warning text-dark h-100">
+                                <div class="card-body text-center">
+                                    <h3 id="total-contents">0</h3>
+                                    <p class="mb-0">Contenuti</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body text-center">
+                                    <h3 id="played-matches">0</h3>
+                                    <p class="mb-0">Partite Giocate</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body text-center">
+                                    <h3 id="pending-matches">0</h3>
+                                    <p class="mb-0">Partite da Giocare</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body text-center">
+                                    <h3 id="visible-contents">0</h3>
+                                    <p class="mb-0">Contenuti Visibili</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light h-100">
+                                <div class="card-body text-center">
+                                    <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#addContentModal">
+                                        <i class="fas fa-plus"></i> Nuovo Contenuto
+                                    </button>
+                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addMatchModal">
+                                        <i class="fas fa-plus"></i> Nuova Partita
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="row">
-                        <div class="col-md-4 mb-4">
+                        <div class="col-md-6 mb-4">
                             <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Totale Squadre</h5>
-                                    <p class="card-text display-4" id="total-teams">0</p>
+                                <div class="card-header bg-primary text-white">
+                                    <h5><i class="fas fa-futbol me-2"></i> Prossime Partite</h5>
                                 </div>
+                                <ul class="list-group list-group-flush" id="upcoming-matches-list">
+                                    <!-- Le prossime partite verranno inserite qui dinamicamente -->
+                                </ul>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-4">
+                        
+                        <div class="col-md-6 mb-4">
                             <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Partite Giocate</h5>
-                                    <p class="card-text display-4" id="total-matches">0</p>
+                                <div class="card-header bg-warning text-dark">
+                                    <h5><i class="fas fa-newspaper me-2"></i> Contenuti Recenti</h5>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Nuove Iscrizioni</h5>
-                                    <p class="card-text display-4" id="new-registrations">0</p>
-                                </div>
+                                <ul class="list-group list-group-flush" id="recent-contents-list">
+                                    <!-- I contenuti recenti verranno inseriti qui dinamicamente -->
+                                </ul>
                             </div>
                         </div>
                     </div>

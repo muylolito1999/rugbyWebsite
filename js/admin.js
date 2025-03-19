@@ -232,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const contentType = document.getElementById('content-type').value;
         const contentText = document.getElementById('content-text').value;
         const contentImage = document.getElementById('content-image').value;
+        const contentId = this.getAttribute('data-content-id') || '';
         
         if (!contentTitle || !contentType || !contentText) {
             alert('Titolo, tipo e contenuto sono obbligatori');
@@ -240,27 +241,55 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const contents = JSON.parse(localStorage.getItem('rugbyContents')) || [];
         
-        const newContent = {
-            id: generateId(),
-            title: contentTitle,
-            type: contentType,
-            text: contentText,
-            image: contentImage,
-            date: new Date().toISOString()
-        };
+        if (contentId) {
+            // Modalità modifica
+            const index = contents.findIndex(content => content.id === contentId);
+            if (index !== -1) {
+                // Preserva il campo visible e la data originale
+                const visible = contents[index].visible;
+                const originalDate = contents[index].date;
+                
+                contents[index] = {
+                    id: contentId,
+                    title: contentTitle,
+                    type: contentType,
+                    text: contentText,
+                    image: contentImage,
+                    date: originalDate,
+                    visible: visible
+                };
+            }
+        } else {
+            // Modalità aggiunta
+            const newContent = {
+                id: generateId(),
+                title: contentTitle,
+                type: contentType,
+                text: contentText,
+                image: contentImage,
+                date: new Date().toISOString(),
+                visible: true // Per default il contenuto è visibile
+            };
+            
+            contents.push(newContent);
+        }
         
-        contents.push(newContent);
         localStorage.setItem('rugbyContents', JSON.stringify(contents));
         
         // Aggiorna la visualizzazione
         renderContents();
+        updateDashboard();
         
         // Chiudi il modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('addContentModal'));
         modal.hide();
         
-        // Reset del form
+        // Reset del form e degli attributi data
         document.getElementById('add-content-form').reset();
+        this.removeAttribute('data-content-id');
+        
+        // Ripristina il titolo del modal
+        document.querySelector('#addContentModal .modal-title').textContent = 'Aggiungi Contenuto';
     });
 
     // Aggiorna la classifica
@@ -398,9 +427,28 @@ function initData() {
                 id: generateId(), 
                 title: 'Inizia il torneo di rugby 2024', 
                 type: 'news', 
-                text: 'Il torneo di rugby 2024 inizierà il 15 aprile con la prima partita tra Leoni e Tigri.', 
+                text: 'Il torneo di rugby 2024 inizierà il 15 aprile con la prima partita tra Leoni e Tigri. Tutti i tifosi sono invitati a partecipare a questo importante evento di apertura della stagione.', 
                 image: '', 
-                date: new Date().toISOString() 
+                date: new Date().toISOString(),
+                visible: true
+            },
+            { 
+                id: generateId(), 
+                title: 'Nuove regole per il torneo', 
+                type: 'announcement', 
+                text: 'La federazione ha introdotto nuove regole per il torneo di quest\'anno. Tutte le squadre sono pregate di prendere visione del regolamento aggiornato disponibile presso la segreteria.', 
+                image: '', 
+                date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 giorni fa
+                visible: true
+            },
+            { 
+                id: generateId(), 
+                title: 'Bozza: Calendario completo', 
+                type: 'article', 
+                text: 'Questa è una bozza del calendario completo del torneo. Le date potrebbero subire variazioni, si prega di controllare regolarmente il sito per aggiornamenti.', 
+                image: '', 
+                date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 giorni fa
+                visible: false
             }
         ];
         localStorage.setItem('rugbyContents', JSON.stringify(exampleContents));
@@ -425,11 +473,120 @@ function initData() {
 function updateDashboard() {
     const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
     const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+    const referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
+    const contents = JSON.parse(localStorage.getItem('rugbyContents')) || [];
     const playedMatches = matches.filter(match => match.played);
+    const pendingMatches = matches.filter(match => !match.played);
+    const visibleContents = contents.filter(content => content.visible);
     
     document.getElementById('total-teams').textContent = teams.length;
-    document.getElementById('total-matches').textContent = playedMatches.length;
-    document.getElementById('new-registrations').textContent = teams.length; // Simulato
+    document.getElementById('total-matches').textContent = matches.length;
+    document.getElementById('played-matches').textContent = playedMatches.length;
+    document.getElementById('pending-matches').textContent = pendingMatches.length;
+    document.getElementById('total-referees').textContent = referees.length;
+    document.getElementById('total-contents').textContent = contents.length;
+    document.getElementById('visible-contents').textContent = visibleContents.length;
+    
+    // Calcola le prossime partite (massimo 3)
+    const now = new Date();
+    const upcomingMatches = matches
+        .filter(match => !match.played && new Date(match.date) > now)
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 3);
+    
+    const upcomingMatchesList = document.getElementById('upcoming-matches-list');
+    if (upcomingMatchesList) {
+        upcomingMatchesList.innerHTML = '';
+        
+        if (upcomingMatches.length === 0) {
+            upcomingMatchesList.innerHTML = '<li class="list-group-item">Nessuna partita programmata</li>';
+        } else {
+            const teamsMap = teams.reduce((map, team) => {
+                map[team.id] = team.name;
+                return map;
+            }, {});
+            
+            upcomingMatches.forEach(match => {
+                const matchDate = new Date(match.date);
+                const formattedDate = matchDate.toLocaleDateString('it-IT') + ' ' + 
+                                     matchDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                const homeName = teamsMap[match.homeTeam] || 'Squadra sconosciuta';
+                const awayName = teamsMap[match.awayTeam] || 'Squadra sconosciuta';
+                
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${homeName} vs ${awayName}</strong>
+                            <br>
+                            <small><i class="far fa-calendar-alt"></i> ${formattedDate}</small>
+                        </div>
+                        <button class="btn btn-sm btn-primary edit-match" data-id="${match.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                `;
+                
+                upcomingMatchesList.appendChild(li);
+            });
+            
+            // Aggiungi event listener ai pulsanti di modifica
+            upcomingMatchesList.querySelectorAll('.edit-match').forEach(button => {
+                button.addEventListener('click', function() {
+                    const matchId = this.getAttribute('data-id');
+                    editMatch(matchId);
+                });
+            });
+        }
+    }
+    
+    // Calcola gli ultimi contenuti aggiunti (massimo 3)
+    const recentContents = contents
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 3);
+    
+    const recentContentsList = document.getElementById('recent-contents-list');
+    if (recentContentsList) {
+        recentContentsList.innerHTML = '';
+        
+        if (recentContents.length === 0) {
+            recentContentsList.innerHTML = '<li class="list-group-item">Nessun contenuto</li>';
+        } else {
+            recentContents.forEach(content => {
+                const contentDate = new Date(content.date);
+                const formattedDate = contentDate.toLocaleDateString('it-IT');
+                
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${content.title}</strong>
+                            <span class="badge ${content.visible ? 'bg-success' : 'bg-secondary'} ms-2">
+                                ${content.visible ? 'Visibile' : 'Nascosto'}
+                            </span>
+                            <br>
+                            <small><i class="far fa-calendar-alt"></i> ${formattedDate} - ${getContentTypeName(content.type)}</small>
+                        </div>
+                        <button class="btn btn-sm btn-primary edit-content" data-id="${content.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                `;
+                
+                recentContentsList.appendChild(li);
+            });
+            
+            // Aggiungi event listener ai pulsanti di modifica
+            recentContentsList.querySelectorAll('.edit-content').forEach(button => {
+                button.addEventListener('click', function() {
+                    const contentId = this.getAttribute('data-id');
+                    editContent(contentId);
+                });
+            });
+        }
+    }
 }
 
 // Popola la tabella delle squadre
@@ -676,16 +833,28 @@ function renderContents() {
         const contentDate = new Date(content.date);
         const formattedDate = contentDate.toLocaleDateString('it-IT');
         
+        // Applica la classe per evidenziare i contenuti visibili/nascosti
+        if (!content.visible) {
+            row.classList.add('table-secondary');
+        }
+        
         row.innerHTML = `
             <td>${content.id.substring(0, 6)}...</td>
             <td>${content.title}</td>
             <td>${formattedDate}</td>
             <td>${getContentTypeName(content.type)}</td>
             <td>
-                <button class="btn btn-sm btn-primary view-content" data-id="${content.id}">
+                <button class="btn btn-sm ${content.visible ? 'btn-success' : 'btn-secondary'} toggle-visibility" 
+                    data-id="${content.id}" title="${content.visible ? 'Visibile' : 'Nascosto'}">
+                    <i class="fas ${content.visible ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                </button>
+                <button class="btn btn-sm btn-info view-content" data-id="${content.id}" title="Visualizza">
                     <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn btn-sm btn-danger delete-content" data-id="${content.id}">
+                <button class="btn btn-sm btn-primary edit-content" data-id="${content.id}" title="Modifica">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger delete-content" data-id="${content.id}" title="Elimina">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
@@ -707,10 +876,130 @@ function renderContents() {
     document.querySelectorAll('.view-content').forEach(button => {
         button.addEventListener('click', function() {
             const contentId = this.getAttribute('data-id');
-            // Funzionalità di visualizzazione da implementare
-            alert('Funzionalità di visualizzazione da implementare');
+            viewContent(contentId);
         });
     });
+    
+    document.querySelectorAll('.edit-content').forEach(button => {
+        button.addEventListener('click', function() {
+            const contentId = this.getAttribute('data-id');
+            editContent(contentId);
+        });
+    });
+    
+    document.querySelectorAll('.toggle-visibility').forEach(button => {
+        button.addEventListener('click', function() {
+            const contentId = this.getAttribute('data-id');
+            toggleContentVisibility(contentId);
+        });
+    });
+}
+
+// Visualizza un contenuto
+function viewContent(contentId) {
+    const contents = JSON.parse(localStorage.getItem('rugbyContents')) || [];
+    const content = contents.find(c => c.id === contentId);
+    
+    if (!content) return;
+    
+    // Crea un modal di visualizzazione dinamico
+    const modalHtml = `
+        <div class="modal fade" id="viewContentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${content.title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <strong>Tipo:</strong> ${getContentTypeName(content.type)}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Data:</strong> ${new Date(content.date).toLocaleDateString('it-IT')}
+                        </div>
+                        <div class="mb-3">
+                            <strong>Visibile:</strong> ${content.visible ? 'Sì' : 'No'}
+                        </div>
+                        ${content.image ? `<div class="mb-3"><img src="${content.image}" alt="Immagine" class="img-fluid"></div>` : ''}
+                        <div class="content-text">
+                            ${content.text}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                        <button type="button" class="btn btn-primary edit-from-view" data-id="${content.id}">Modifica</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Aggiungi il modal al body e mostralo
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHtml;
+    document.body.appendChild(modalContainer);
+    
+    const viewModal = new bootstrap.Modal(document.getElementById('viewContentModal'));
+    viewModal.show();
+    
+    // Aggiungi event listener al pulsante di modifica
+    document.querySelector('.edit-from-view').addEventListener('click', function() {
+        const contentId = this.getAttribute('data-id');
+        viewModal.hide();
+        
+        // Rimuovi il modal dopo la chiusura
+        document.getElementById('viewContentModal').addEventListener('hidden.bs.modal', function() {
+            modalContainer.remove();
+            editContent(contentId);
+        });
+    });
+    
+    // Rimuovi il modal dopo la chiusura
+    document.getElementById('viewContentModal').addEventListener('hidden.bs.modal', function() {
+        modalContainer.remove();
+    });
+}
+
+// Modifica un contenuto
+function editContent(contentId) {
+    const contents = JSON.parse(localStorage.getItem('rugbyContents')) || [];
+    const content = contents.find(c => c.id === contentId);
+    
+    if (!content) return;
+    
+    // Popola il form del modal
+    document.getElementById('content-title').value = content.title;
+    document.getElementById('content-type').value = content.type;
+    document.getElementById('content-text').value = content.text;
+    document.getElementById('content-image').value = content.image || '';
+    
+    // Aggiungi l'ID del contenuto come attributo data al pulsante di salvataggio
+    const saveButton = document.getElementById('save-content-btn');
+    saveButton.setAttribute('data-content-id', contentId);
+    
+    // Cambia il titolo del modal
+    document.querySelector('#addContentModal .modal-title').textContent = 'Modifica Contenuto';
+    
+    // Apri il modal
+    const modal = new bootstrap.Modal(document.getElementById('addContentModal'));
+    modal.show();
+}
+
+// Cambia la visibilità di un contenuto
+function toggleContentVisibility(contentId) {
+    const contents = JSON.parse(localStorage.getItem('rugbyContents')) || [];
+    const index = contents.findIndex(c => c.id === contentId);
+    
+    if (index === -1) return;
+    
+    // Inverti lo stato di visibilità
+    contents[index].visible = !contents[index].visible;
+    
+    localStorage.setItem('rugbyContents', JSON.stringify(contents));
+    
+    // Aggiorna la visualizzazione
+    renderContents();
 }
 
 // Elimina una squadra
@@ -808,13 +1097,13 @@ function calculateStandings() {
             // Calcola i punti per la squadra di casa
             homeScore += (homeDetails.periodo1.mete + homeDetails.periodo2.mete) * 5; // 5 punti per meta
             homeScore += (homeDetails.periodo1.trasformazioni + homeDetails.periodo2.trasformazioni) * 2; // 2 punti per trasformazione
-            homeScore += (homeDetails.periodo1.calci + homeDetails.periodo2.calci) * 3; // 3 punti per calcio di punizione
+            homeScore += (homeDetails.periodo1.punizioni + homeDetails.periodo2.punizioni) * 3; // 3 punti per punizione
             homeScore += (homeDetails.periodo1.drop + homeDetails.periodo2.drop) * 3; // 3 punti per drop
             
             // Calcola i punti per la squadra ospite
             awayScore += (awayDetails.periodo1.mete + awayDetails.periodo2.mete) * 5;
             awayScore += (awayDetails.periodo1.trasformazioni + awayDetails.periodo2.trasformazioni) * 2;
-            awayScore += (awayDetails.periodo1.calci + awayDetails.periodo2.calci) * 3;
+            awayScore += (awayDetails.periodo1.punizioni + awayDetails.periodo2.punizioni) * 3;
             awayScore += (awayDetails.periodo1.drop + awayDetails.periodo2.drop) * 3;
             
             // Calcola le mete totali
