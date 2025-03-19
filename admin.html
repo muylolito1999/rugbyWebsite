@@ -368,6 +368,210 @@
         </div>
     </div>
 
+    <!-- Modal Risultato Dettagliato Rugby -->
+    <div class="modal fade" id="rugbyResultModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Referto Arbitrale</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rugby-result-form">
+                        <input type="hidden" id="match-id-result">
+                        
+                        <div class="mb-4">
+                            <h5 id="squadra-casa-nome" class="text-primary mb-3">Squadra Casa</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <div class="text-center fw-bold">Mete</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-center fw-bold">Trasf.</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-center fw-bold">Puniz.</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-center fw-bold">Drop</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Prima metà -->
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-2">
+                                            <label class="form-label">1° T</label>
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="home-mete-1t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="home-trasf-1t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="home-puniz-1t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="home-drop-1t" min="0" value="0">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Seconda metà -->
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-2">
+                                            <label class="form-label">2° T</label>
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="home-mete-2t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="home-trasf-2t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="home-puniz-2t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="home-drop-2t" min="0" value="0">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Totali (calcolati automaticamente) -->
+                                    <div class="row align-items-center bg-white py-2 rounded">
+                                        <div class="col-2">
+                                            <label class="form-label fw-bold">Tot.</label>
+                                        </div>
+                                        <div class="col">
+                                            <div id="home-mete-tot" class="text-center fw-bold">0</div>
+                                        </div>
+                                        <div class="col">
+                                            <div id="home-trasf-tot" class="text-center fw-bold">0</div>
+                                        </div>
+                                        <div class="col">
+                                            <div id="home-puniz-tot" class="text-center fw-bold">0</div>
+                                        </div>
+                                        <div class="col">
+                                            <div id="home-drop-tot" class="text-center fw-bold">0</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Punteggio totale -->
+                                    <div class="row align-items-center mt-3">
+                                        <div class="col-12 text-center">
+                                            <h5>Punteggio totale: <span id="home-total-score" class="fw-bold">0</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h5 id="squadra-ospite-nome" class="text-danger mb-3">Squadra Ospite</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <div class="text-center fw-bold">Mete</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-center fw-bold">Trasf.</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-center fw-bold">Puniz.</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="text-center fw-bold">Drop</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Prima metà -->
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-2">
+                                            <label class="form-label">1° T</label>
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="away-mete-1t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="away-trasf-1t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="away-puniz-1t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="away-drop-1t" min="0" value="0">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Seconda metà -->
+                                    <div class="row align-items-center mb-3">
+                                        <div class="col-2">
+                                            <label class="form-label">2° T</label>
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="away-mete-2t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="away-trasf-2t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="away-puniz-2t" min="0" value="0">
+                                        </div>
+                                        <div class="col">
+                                            <input type="number" class="form-control" id="away-drop-2t" min="0" value="0">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Totali (calcolati automaticamente) -->
+                                    <div class="row align-items-center bg-white py-2 rounded">
+                                        <div class="col-2">
+                                            <label class="form-label fw-bold">Tot.</label>
+                                        </div>
+                                        <div class="col">
+                                            <div id="away-mete-tot" class="text-center fw-bold">0</div>
+                                        </div>
+                                        <div class="col">
+                                            <div id="away-trasf-tot" class="text-center fw-bold">0</div>
+                                        </div>
+                                        <div class="col">
+                                            <div id="away-puniz-tot" class="text-center fw-bold">0</div>
+                                        </div>
+                                        <div class="col">
+                                            <div id="away-drop-tot" class="text-center fw-bold">0</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Punteggio totale -->
+                                    <div class="row align-items-center mt-3">
+                                        <div class="col-12 text-center">
+                                            <h5>Punteggio totale: <span id="away-total-score" class="fw-bold">0</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="match-status" id="match-disputata" value="disputata" checked>
+                                <label class="form-check-label" for="match-disputata">DISPUTATA</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="match-status" id="match-sospesa" value="sospesa">
+                                <label class="form-check-label" for="match-sospesa">SOSPESA</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="save-rugby-result-btn">Salva Risultato</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/admin.js"></script>

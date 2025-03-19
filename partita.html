@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dettaglio Partita - Torneo Rugby</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .match-header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+        }
+        .team-name {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .score {
+            font-size: 46px;
+            font-weight: bold;
+        }
+        .vs {
+            font-size: 24px;
+            color: #888;
+        }
+        .match-info {
+            margin-top: 10px;
+            color: #666;
+        }
+        .rugby-stats-table th {
+            background-color: #1a237e;
+            color: white;
+        }
+        .rugby-stats-table .total-row {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .match-status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status-disputata {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-sospesa {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Torneo Rugby</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#squadre">Squadre</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html#calendario">Calendario</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#classifica">Classifica</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#iscrizione">Iscrizione</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <a href="index.html#calendario" class="btn btn-outline-primary mb-3">
+                    <i class="fas fa-arrow-left"></i> Torna al Calendario
+                </a>
+            </div>
+        </div>
+        
+        <div class="match-header text-center">
+            <div class="row align-items-center">
+                <div class="col-md-5 text-md-end">
+                    <div class="team-name" id="home-team-name">Squadra Casa</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <span class="score" id="home-score">0</span>
+                        <span class="vs mx-2">-</span>
+                        <span class="score" id="away-score">0</span>
+                    </div>
+                </div>
+                <div class="col-md-5 text-md-start">
+                    <div class="team-name" id="away-team-name">Squadra Ospite</div>
+                </div>
+            </div>
+            <div class="match-info">
+                <span id="match-date">Data Partita</span> | 
+                <span class="match-status" id="match-status">DISPUTATA</span>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 id="home-team-name-card">Squadra Casa</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered rugby-stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Tempo</th>
+                                    <th>Mete</th>
+                                    <th>Trasf.</th>
+                                    <th>Puniz.</th>
+                                    <th>Drop</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1° T</td>
+                                    <td id="home-mete-1t">0</td>
+                                    <td id="home-trasf-1t">0</td>
+                                    <td id="home-puniz-1t">0</td>
+                                    <td id="home-drop-1t">0</td>
+                                </tr>
+                                <tr>
+                                    <td>2° T</td>
+                                    <td id="home-mete-2t">0</td>
+                                    <td id="home-trasf-2t">0</td>
+                                    <td id="home-puniz-2t">0</td>
+                                    <td id="home-drop-2t">0</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Totale</td>
+                                    <td id="home-mete-tot">0</td>
+                                    <td id="home-trasf-tot">0</td>
+                                    <td id="home-puniz-tot">0</td>
+                                    <td id="home-drop-tot">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h4 id="away-team-name-card">Squadra Ospite</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered rugby-stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Tempo</th>
+                                    <th>Mete</th>
+                                    <th>Trasf.</th>
+                                    <th>Puniz.</th>
+                                    <th>Drop</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1° T</td>
+                                    <td id="away-mete-1t">0</td>
+                                    <td id="away-trasf-1t">0</td>
+                                    <td id="away-puniz-1t">0</td>
+                                    <td id="away-drop-1t">0</td>
+                                </tr>
+                                <tr>
+                                    <td>2° T</td>
+                                    <td id="away-mete-2t">0</td>
+                                    <td id="away-trasf-2t">0</td>
+                                    <td id="away-puniz-2t">0</td>
+                                    <td id="away-drop-2t">0</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Totale</td>
+                                    <td id="away-mete-tot">0</td>
+                                    <td id="away-trasf-tot">0</td>
+                                    <td id="away-puniz-tot">0</td>
+                                    <td id="away-drop-tot">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Riepilogo punteggio</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 id="home-team-points-name">Squadra Casa</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Mete: <span id="home-mete-points">0 (x5)</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Trasformazioni: <span id="home-trasf-points">0 (x2)</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Punizioni: <span id="home-puniz-points">0 (x3)</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Drop: <span id="home-drop-points">0 (x3)</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                                        Totale: <span id="home-total-points">0</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 id="away-team-points-name">Squadra Ospite</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Mete: <span id="away-mete-points">0 (x5)</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Trasformazioni: <span id="away-trasf-points">0 (x2)</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Punizioni: <span id="away-puniz-points">0 (x3)</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Drop: <span id="away-drop-points">0 (x3)</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                                        Totale: <span id="away-total-points">0</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Torneo Rugby</h5>
+                    <p>La tua fonte di informazioni ufficiale per il torneo di rugby.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Link Utili</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html#home" class="text-white">Home</a></li>
+                        <li><a href="index.html#squadre" class="text-white">Squadre</a></li>
+                        <li><a href="index.html#calendario" class="text-white">Calendario</a></li>
+                        <li><a href="index.html#iscrizione" class="text-white">Iscrizione</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contatti</h5>
+                    <p>Email: info@torneirugby.it</p>
+                    <p>Tel: 123-456-7890</p>
+                    <p><a href="login.html" class="text-white">Area Admin</a></p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col text-center">
+                    <p>&copy; 2024 Torneo Rugby. Tutti i diritti riservati.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ottieni l'ID della partita dall'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const matchId = urlParams.get('id');
+            
+            if (!matchId) {
+                // Reindirizza alla pagina principale se non c'è un ID partita
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Carica i dati della partita
+            const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+            const match = matches.find(m => m.id === matchId);
+            
+            if (!match) {
+                // Partita non trovata
+                document.body.innerHTML = '<div class="container mt-5"><div class="alert alert-danger">Partita non trovata</div><a href="index.html" class="btn btn-primary">Torna alla Home</a></div>';
+                return;
+            }
+            
+            // Carica i dati delle squadre
+            const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+            const homeTeam = teams.find(team => team.id === match.homeTeam);
+            const awayTeam = teams.find(team => team.id === match.awayTeam);
+            
+            if (!homeTeam || !awayTeam) {
+                // Squadre non trovate
+                document.body.innerHTML = '<div class="container mt-5"><div class="alert alert-danger">Informazioni sulle squadre non trovate</div><a href="index.html" class="btn btn-primary">Torna alla Home</a></div>';
+                return;
+            }
+            
+            // Formatta la data della partita
+            const matchDate = new Date(match.date);
+            const formattedDate = matchDate.toLocaleDateString('it-IT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Imposta le informazioni dell'header
+            document.getElementById('home-team-name').textContent = homeTeam.name;
+            document.getElementById('away-team-name').textContent = awayTeam.name;
+            document.getElementById('match-date').textContent = formattedDate;
+            
+            document.getElementById('home-team-name-card').textContent = homeTeam.name;
+            document.getElementById('away-team-name-card').textContent = awayTeam.name;
+            
+            document.getElementById('home-team-points-name').textContent = homeTeam.name;
+            document.getElementById('away-team-points-name').textContent = awayTeam.name;
+            
+            // Imposta il punteggio
+            let homeScore = 0;
+            let awayScore = 0;
+            
+            if (match.rugbyDetails) {
+                const homeDetails = match.rugbyDetails.home;
+                const awayDetails = match.rugbyDetails.away;
+                
+                // Home team - primo tempo
+                document.getElementById('home-mete-1t').textContent = homeDetails.periodo1.mete;
+                document.getElementById('home-trasf-1t').textContent = homeDetails.periodo1.trasformazioni;
+                document.getElementById('home-puniz-1t').textContent = homeDetails.periodo1.punizioni;
+                document.getElementById('home-drop-1t').textContent = homeDetails.periodo1.drop;
+                
+                // Home team - secondo tempo
+                document.getElementById('home-mete-2t').textContent = homeDetails.periodo2.mete;
+                document.getElementById('home-trasf-2t').textContent = homeDetails.periodo2.trasformazioni;
+                document.getElementById('home-puniz-2t').textContent = homeDetails.periodo2.punizioni;
+                document.getElementById('home-drop-2t').textContent = homeDetails.periodo2.drop;
+                
+                // Away team - primo tempo
+                document.getElementById('away-mete-1t').textContent = awayDetails.periodo1.mete;
+                document.getElementById('away-trasf-1t').textContent = awayDetails.periodo1.trasformazioni;
+                document.getElementById('away-puniz-1t').textContent = awayDetails.periodo1.punizioni;
+                document.getElementById('away-drop-1t').textContent = awayDetails.periodo1.drop;
+                
+                // Away team - secondo tempo
+                document.getElementById('away-mete-2t').textContent = awayDetails.periodo2.mete;
+                document.getElementById('away-trasf-2t').textContent = awayDetails.periodo2.trasformazioni;
+                document.getElementById('away-puniz-2t').textContent = awayDetails.periodo2.punizioni;
+                document.getElementById('away-drop-2t').textContent = awayDetails.periodo2.drop;
+                
+                // Calcola i totali
+                const homeMeteTot = homeDetails.periodo1.mete + homeDetails.periodo2.mete;
+                const homeTrasfTot = homeDetails.periodo1.trasformazioni + homeDetails.periodo2.trasformazioni;
+                const homePunizTot = homeDetails.periodo1.punizioni + homeDetails.periodo2.punizioni;
+                const homeDropTot = homeDetails.periodo1.drop + homeDetails.periodo2.drop;
+                
+                const awayMeteTot = awayDetails.periodo1.mete + awayDetails.periodo2.mete;
+                const awayTrasfTot = awayDetails.periodo1.trasformazioni + awayDetails.periodo2.trasformazioni;
+                const awayPunizTot = awayDetails.periodo1.punizioni + awayDetails.periodo2.punizioni;
+                const awayDropTot = awayDetails.periodo1.drop + awayDetails.periodo2.drop;
+                
+                // Imposta i totali
+                document.getElementById('home-mete-tot').textContent = homeMeteTot;
+                document.getElementById('home-trasf-tot').textContent = homeTrasfTot;
+                document.getElementById('home-puniz-tot').textContent = homePunizTot;
+                document.getElementById('home-drop-tot').textContent = homeDropTot;
+                
+                document.getElementById('away-mete-tot').textContent = awayMeteTot;
+                document.getElementById('away-trasf-tot').textContent = awayTrasfTot;
+                document.getElementById('away-puniz-tot').textContent = awayPunizTot;
+                document.getElementById('away-drop-tot').textContent = awayDropTot;
+                
+                // Calcola i punti
+                const homeMetePoints = homeMeteTot * 5;
+                const homeTrasfPoints = homeTrasfTot * 2;
+                const homePunizPoints = homePunizTot * 3;
+                const homeDropPoints = homeDropTot * 3;
+                
+                const awayMetePoints = awayMeteTot * 5;
+                const awayTrasfPoints = awayTrasfTot * 2;
+                const awayPunizPoints = awayPunizTot * 3;
+                const awayDropPoints = awayDropTot * 3;
+                
+                // Imposta i punti nel riepilogo
+                document.getElementById('home-mete-points').textContent = `${homeMetePoints} (${homeMeteTot} x 5)`;
+                document.getElementById('home-trasf-points').textContent = `${homeTrasfPoints} (${homeTrasfTot} x 2)`;
+                document.getElementById('home-puniz-points').textContent = `${homePunizPoints} (${homePunizTot} x 3)`;
+                document.getElementById('home-drop-points').textContent = `${homeDropPoints} (${homeDropTot} x 3)`;
+                
+                document.getElementById('away-mete-points').textContent = `${awayMetePoints} (${awayMeteTot} x 5)`;
+                document.getElementById('away-trasf-points').textContent = `${awayTrasfPoints} (${awayTrasfTot} x 2)`;
+                document.getElementById('away-puniz-points').textContent = `${awayPunizPoints} (${awayPunizTot} x 3)`;
+                document.getElementById('away-drop-points').textContent = `${awayDropPoints} (${awayDropTot} x 3)`;
+                
+                // Calcola il punteggio totale
+                homeScore = homeMetePoints + homeTrasfPoints + homePunizPoints + homeDropPoints;
+                awayScore = awayMetePoints + awayTrasfPoints + awayPunizPoints + awayDropPoints;
+                
+                document.getElementById('home-total-points').textContent = homeScore;
+                document.getElementById('away-total-points').textContent = awayScore;
+            } else if (match.homeScore !== null && match.awayScore !== null) {
+                homeScore = match.homeScore;
+                awayScore = match.awayScore;
+            }
+            
+            // Imposta il punteggio nell'header
+            document.getElementById('home-score').textContent = homeScore;
+            document.getElementById('away-score').textContent = awayScore;
+            
+            // Imposta lo stato della partita
+            const statusElement = document.getElementById('match-status');
+            if (match.status === 'sospesa') {
+                statusElement.textContent = 'SOSPESA';
+                statusElement.classList.add('status-sospesa');
+            } else {
+                statusElement.textContent = 'DISPUTATA';
+                statusElement.classList.add('status-disputata');
+            }
+            
+            // Imposta il titolo della pagina
+            document.title = `${homeTeam.name} vs ${awayTeam.name} - Torneo Rugby`;
+        });
+    </script>
+</body>
+</html> 

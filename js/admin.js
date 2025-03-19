@@ -110,7 +110,38 @@ document.addEventListener('DOMContentLoaded', function() {
             awayTeam: awayTeam,
             homeScore: homeScore ? parseInt(homeScore) : null,
             awayScore: awayScore ? parseInt(awayScore) : null,
-            played: homeScore !== '' && awayScore !== ''
+            played: homeScore !== '' && awayScore !== '',
+            status: 'disputata', // può essere 'disputata' o 'sospesa'
+            rugbyDetails: {
+                home: {
+                    periodo1: {
+                        mete: 0,
+                        trasformazioni: 0,
+                        punizioni: 0,
+                        drop: 0
+                    },
+                    periodo2: {
+                        mete: 0,
+                        trasformazioni: 0,
+                        punizioni: 0,
+                        drop: 0
+                    }
+                },
+                away: {
+                    periodo1: {
+                        mete: 0,
+                        trasformazioni: 0,
+                        punizioni: 0,
+                        drop: 0
+                    },
+                    periodo2: {
+                        mete: 0,
+                        trasformazioni: 0,
+                        punizioni: 0,
+                        drop: 0
+                    }
+                }
+            }
         };
         
         matches.push(newMatch);
@@ -127,6 +158,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Reset del form
         document.getElementById('add-match-form').reset();
+        
+        // Chiedi all'utente se vuole inserire i dettagli del rugby
+        if (confirm('Vuoi inserire i dettagli delle mete, trasformazioni, punizioni e drop per questa partita?')) {
+            openRugbyResultModal(newMatch.id);
+        }
     });
 
     // Gestione del form per aggiungere un contenuto
@@ -320,13 +356,49 @@ function renderMatches() {
         const matchDate = new Date(match.date);
         const formattedDate = matchDate.toLocaleDateString('it-IT') + ' ' + matchDate.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
         
+        // Calcola il punteggio totale dalle statistiche di rugby
+        let homeTotal = 0;
+        let awayTotal = 0;
+        
+        if (match.rugbyDetails) {
+            const homeDetails = match.rugbyDetails.home;
+            const awayDetails = match.rugbyDetails.away;
+            
+            // Calcola i punti per la squadra di casa
+            homeTotal += (homeDetails.periodo1.mete + homeDetails.periodo2.mete) * 5; // 5 punti per meta
+            homeTotal += (homeDetails.periodo1.trasformazioni + homeDetails.periodo2.trasformazioni) * 2; // 2 punti per trasformazione
+            homeTotal += (homeDetails.periodo1.punizioni + homeDetails.periodo2.punizioni) * 3; // 3 punti per punizione
+            homeTotal += (homeDetails.periodo1.drop + homeDetails.periodo2.drop) * 3; // 3 punti per drop
+            
+            // Calcola i punti per la squadra ospite
+            awayTotal += (awayDetails.periodo1.mete + awayDetails.periodo2.mete) * 5;
+            awayTotal += (awayDetails.periodo1.trasformazioni + awayDetails.periodo2.trasformazioni) * 2;
+            awayTotal += (awayDetails.periodo1.punizioni + awayDetails.periodo2.punizioni) * 3;
+            awayTotal += (awayDetails.periodo1.drop + awayDetails.periodo2.drop) * 3;
+        } else if (match.homeScore !== null && match.awayScore !== null) {
+            homeTotal = match.homeScore;
+            awayTotal = match.awayScore;
+        }
+        
+        let risultatoText = 'Non giocata';
+        if (match.played) {
+            if (match.status === 'sospesa') {
+                risultatoText = `${homeTotal} - ${awayTotal} (SOSPESA)`;
+            } else {
+                risultatoText = `${homeTotal} - ${awayTotal}`;
+            }
+        }
+        
         row.innerHTML = `
             <td>${match.id.substring(0, 6)}...</td>
             <td>${formattedDate}</td>
             <td>${homeTeam.name}</td>
             <td>${awayTeam.name}</td>
-            <td>${match.played ? `${match.homeScore} - ${match.awayScore}` : 'Non giocata'}</td>
+            <td>${risultatoText}</td>
             <td>
+                <button class="btn btn-sm btn-success rugby-result" data-id="${match.id}" title="Referto Arbitrale">
+                    <i class="fas fa-clipboard-list"></i>
+                </button>
                 <button class="btn btn-sm btn-primary edit-match" data-id="${match.id}">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -354,6 +426,13 @@ function renderMatches() {
             const matchId = this.getAttribute('data-id');
             // Funzionalità di modifica da implementare
             alert('Funzionalità di modifica da implementare');
+        });
+    });
+    
+    document.querySelectorAll('.rugby-result').forEach(button => {
+        button.addEventListener('click', function() {
+            const matchId = this.getAttribute('data-id');
+            openRugbyResultModal(matchId);
         });
     });
 }
@@ -486,74 +565,117 @@ function deleteContent(contentId) {
     renderContents();
 }
 
-// Calcola la classifica
+// Funzione per calcolare la classifica
 function calculateStandings() {
     const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
     const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
-    const playedMatches = matches.filter(match => match.played);
     
     // Inizializza la classifica
     const standings = teams.map(team => ({
         id: team.id,
         name: team.name,
-        points: 0,
         played: 0,
         won: 0,
+        drawn: 0,
         lost: 0,
-        scored: 0,
-        conceded: 0
+        points: 0,
+        scored: 0,    // Mete fatte
+        conceded: 0   // Mete subite
     }));
     
-    // Calcola i punti
-    playedMatches.forEach(match => {
+    // Aggiorna la classifica in base ai risultati delle partite
+    matches.forEach(match => {
+        if (!match.played) return; // Ignora le partite non giocate
+        
         const homeTeamIndex = standings.findIndex(team => team.id === match.homeTeam);
         const awayTeamIndex = standings.findIndex(team => team.id === match.awayTeam);
         
         if (homeTeamIndex === -1 || awayTeamIndex === -1) return;
         
-        // Aggiorna le statistiche della squadra di casa
-        standings[homeTeamIndex].played++;
-        standings[homeTeamIndex].scored += match.homeScore;
-        standings[homeTeamIndex].conceded += match.awayScore;
+        const homeTeam = standings[homeTeamIndex];
+        const awayTeam = standings[awayTeamIndex];
         
-        // Aggiorna le statistiche della squadra ospite
-        standings[awayTeamIndex].played++;
-        standings[awayTeamIndex].scored += match.awayScore;
-        standings[awayTeamIndex].conceded += match.homeScore;
+        // Aggiorna il numero di partite giocate
+        homeTeam.played++;
+        awayTeam.played++;
         
-        // Assegna punti (4 per vittoria, 2 per pareggio, 0 per sconfitta)
-        if (match.homeScore > match.awayScore) {
-            standings[homeTeamIndex].won++;
-            standings[homeTeamIndex].points += 4;
-            standings[awayTeamIndex].lost++;
-        } else if (match.homeScore < match.awayScore) {
-            standings[awayTeamIndex].won++;
-            standings[awayTeamIndex].points += 4;
-            standings[homeTeamIndex].lost++;
+        // Calcola i punteggi dalla partita
+        let homeScore = 0;
+        let awayScore = 0;
+        let homeTeamTries = 0;
+        let awayTeamTries = 0;
+        
+        if (match.rugbyDetails) {
+            // Calcola il punteggio totale dai dettagli della partita
+            const homeDetails = match.rugbyDetails.home;
+            const awayDetails = match.rugbyDetails.away;
+            
+            // Calcola i punti per la squadra di casa
+            homeScore += (homeDetails.periodo1.mete + homeDetails.periodo2.mete) * 5; // 5 punti per meta
+            homeScore += (homeDetails.periodo1.trasformazioni + homeDetails.periodo2.trasformazioni) * 2; // 2 punti per trasformazione
+            homeScore += (homeDetails.periodo1.calci + homeDetails.periodo2.calci) * 3; // 3 punti per calcio di punizione
+            homeScore += (homeDetails.periodo1.drop + homeDetails.periodo2.drop) * 3; // 3 punti per drop
+            
+            // Calcola i punti per la squadra ospite
+            awayScore += (awayDetails.periodo1.mete + awayDetails.periodo2.mete) * 5;
+            awayScore += (awayDetails.periodo1.trasformazioni + awayDetails.periodo2.trasformazioni) * 2;
+            awayScore += (awayDetails.periodo1.calci + awayDetails.periodo2.calci) * 3;
+            awayScore += (awayDetails.periodo1.drop + awayDetails.periodo2.drop) * 3;
+            
+            // Calcola le mete totali
+            homeTeamTries = homeDetails.periodo1.mete + homeDetails.periodo2.mete;
+            awayTeamTries = awayDetails.periodo1.mete + awayDetails.periodo2.mete;
         } else {
-            // Pareggio
-            standings[homeTeamIndex].points += 2;
-            standings[awayTeamIndex].points += 2;
+            // Usa i punteggi diretti se i dettagli non sono disponibili
+            homeScore = match.homeScore || 0;
+            awayScore = match.awayScore || 0;
         }
         
-        // Bonus per 4 o più mete (1 punto)
-        if (match.homeScore >= 4) {
-            standings[homeTeamIndex].points += 1;
-        }
-        if (match.awayScore >= 4) {
-            standings[awayTeamIndex].points += 1;
+        // Aggiorna mete fatte e subite
+        homeTeam.scored += homeTeamTries;
+        homeTeam.conceded += awayTeamTries;
+        awayTeam.scored += awayTeamTries;
+        awayTeam.conceded += homeTeamTries;
+        
+        // Aggiorna vittorie, pareggi, sconfitte e punti in classifica
+        if (homeScore > awayScore) {
+            homeTeam.won++;
+            homeTeam.points += 4; // 4 punti per la vittoria
+            awayTeam.lost++;
+            
+            // Bonus punto per chi perde con meno di 7 punti di scarto
+            if (homeScore - awayScore <= 7) {
+                awayTeam.points += 1;
+            }
+        } else if (homeScore < awayScore) {
+            awayTeam.won++;
+            awayTeam.points += 4; // 4 punti per la vittoria
+            homeTeam.lost++;
+            
+            // Bonus punto per chi perde con meno di 7 punti di scarto
+            if (awayScore - homeScore <= 7) {
+                homeTeam.points += 1;
+            }
+        } else {
+            homeTeam.drawn++;
+            awayTeam.drawn++;
+            homeTeam.points += 2; // 2 punti per il pareggio
+            awayTeam.points += 2; // 2 punti per il pareggio
         }
         
-        // Bonus per sconfitta con meno di 7 punti di scarto (1 punto)
-        if (match.homeScore < match.awayScore && match.awayScore - match.homeScore < 7) {
-            standings[homeTeamIndex].points += 1;
+        // Bonus punti per chi segna 4 o più mete (1 punto extra)
+        if (homeTeamTries >= 4) {
+            homeTeam.points += 1;
         }
-        if (match.awayScore < match.homeScore && match.homeScore - match.awayScore < 7) {
-            standings[awayTeamIndex].points += 1;
+        if (awayTeamTries >= 4) {
+            awayTeam.points += 1;
         }
     });
     
+    // Salva la classifica aggiornata
     localStorage.setItem('rugbyStandings', JSON.stringify(standings));
+    
+    return standings;
 }
 
 // Popola i select delle squadre
@@ -608,4 +730,239 @@ function getContentTypeName(typeCode) {
         'announcement': 'Annuncio'
     };
     return types[typeCode] || typeCode;
-} 
+}
+
+// Apre il modal per i risultati dettagliati di rugby
+function openRugbyResultModal(matchId) {
+    const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+    const match = matches.find(m => m.id === matchId);
+    
+    if (!match) return;
+    
+    const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+    const homeTeam = teams.find(team => team.id === match.homeTeam);
+    const awayTeam = teams.find(team => team.id === match.awayTeam);
+    
+    if (!homeTeam || !awayTeam) return;
+    
+    // Imposta i nomi delle squadre nel modal
+    document.getElementById('squadra-casa-nome').textContent = homeTeam.name;
+    document.getElementById('squadra-ospite-nome').textContent = awayTeam.name;
+    
+    // Memorizza l'ID della partita
+    document.getElementById('match-id-result').value = matchId;
+    
+    // Imposta lo stato della partita
+    if (match.status === 'sospesa') {
+        document.getElementById('match-sospesa').checked = true;
+    } else {
+        document.getElementById('match-disputata').checked = true;
+    }
+    
+    // Imposta i valori dei campi se esistono dati dettagliati
+    if (match.rugbyDetails) {
+        // Squadra casa
+        document.getElementById('home-mete-1t').value = match.rugbyDetails.home.periodo1.mete;
+        document.getElementById('home-trasf-1t').value = match.rugbyDetails.home.periodo1.trasformazioni;
+        document.getElementById('home-puniz-1t').value = match.rugbyDetails.home.periodo1.punizioni;
+        document.getElementById('home-drop-1t').value = match.rugbyDetails.home.periodo1.drop;
+        
+        document.getElementById('home-mete-2t').value = match.rugbyDetails.home.periodo2.mete;
+        document.getElementById('home-trasf-2t').value = match.rugbyDetails.home.periodo2.trasformazioni;
+        document.getElementById('home-puniz-2t').value = match.rugbyDetails.home.periodo2.punizioni;
+        document.getElementById('home-drop-2t').value = match.rugbyDetails.home.periodo2.drop;
+        
+        // Squadra ospite
+        document.getElementById('away-mete-1t').value = match.rugbyDetails.away.periodo1.mete;
+        document.getElementById('away-trasf-1t').value = match.rugbyDetails.away.periodo1.trasformazioni;
+        document.getElementById('away-puniz-1t').value = match.rugbyDetails.away.periodo1.punizioni;
+        document.getElementById('away-drop-1t').value = match.rugbyDetails.away.periodo1.drop;
+        
+        document.getElementById('away-mete-2t').value = match.rugbyDetails.away.periodo2.mete;
+        document.getElementById('away-trasf-2t').value = match.rugbyDetails.away.periodo2.trasformazioni;
+        document.getElementById('away-puniz-2t').value = match.rugbyDetails.away.periodo2.punizioni;
+        document.getElementById('away-drop-2t').value = match.rugbyDetails.away.periodo2.drop;
+    } else {
+        // Reset dei campi
+        document.getElementById('home-mete-1t').value = 0;
+        document.getElementById('home-trasf-1t').value = 0;
+        document.getElementById('home-puniz-1t').value = 0;
+        document.getElementById('home-drop-1t').value = 0;
+        
+        document.getElementById('home-mete-2t').value = 0;
+        document.getElementById('home-trasf-2t').value = 0;
+        document.getElementById('home-puniz-2t').value = 0;
+        document.getElementById('home-drop-2t').value = 0;
+        
+        document.getElementById('away-mete-1t').value = 0;
+        document.getElementById('away-trasf-1t').value = 0;
+        document.getElementById('away-puniz-1t').value = 0;
+        document.getElementById('away-drop-1t').value = 0;
+        
+        document.getElementById('away-mete-2t').value = 0;
+        document.getElementById('away-trasf-2t').value = 0;
+        document.getElementById('away-puniz-2t').value = 0;
+        document.getElementById('away-drop-2t').value = 0;
+    }
+    
+    // Calcola i totali
+    updateRugbyTotals();
+    
+    // Apri il modal
+    const rugbyResultModal = new bootstrap.Modal(document.getElementById('rugbyResultModal'));
+    rugbyResultModal.show();
+}
+
+// Funzione per aggiornare i totali nel modal dei risultati
+function updateRugbyTotals() {
+    // Home team
+    const homeMete1T = parseInt(document.getElementById('home-mete-1t').value) || 0;
+    const homeTrasf1T = parseInt(document.getElementById('home-trasf-1t').value) || 0;
+    const homePuniz1T = parseInt(document.getElementById('home-puniz-1t').value) || 0;
+    const homeDrop1T = parseInt(document.getElementById('home-drop-1t').value) || 0;
+    
+    const homeMete2T = parseInt(document.getElementById('home-mete-2t').value) || 0;
+    const homeTrasf2T = parseInt(document.getElementById('home-trasf-2t').value) || 0;
+    const homePuniz2T = parseInt(document.getElementById('home-puniz-2t').value) || 0;
+    const homeDrop2T = parseInt(document.getElementById('home-drop-2t').value) || 0;
+    
+    const homeMeteTot = homeMete1T + homeMete2T;
+    const homeTrasfTot = homeTrasf1T + homeTrasf2T;
+    const homePunizTot = homePuniz1T + homePuniz2T;
+    const homeDropTot = homeDrop1T + homeDrop2T;
+    
+    // Aggiorna i totali nella tabella
+    document.getElementById('home-mete-tot').textContent = homeMeteTot;
+    document.getElementById('home-trasf-tot').textContent = homeTrasfTot;
+    document.getElementById('home-puniz-tot').textContent = homePunizTot;
+    document.getElementById('home-drop-tot').textContent = homeDropTot;
+    
+    // Calcola il punteggio totale
+    const homeTotal = (homeMeteTot * 5) + (homeTrasfTot * 2) + (homePunizTot * 3) + (homeDropTot * 3);
+    document.getElementById('home-total-score').textContent = homeTotal;
+    
+    // Away team
+    const awayMete1T = parseInt(document.getElementById('away-mete-1t').value) || 0;
+    const awayTrasf1T = parseInt(document.getElementById('away-trasf-1t').value) || 0;
+    const awayPuniz1T = parseInt(document.getElementById('away-puniz-1t').value) || 0;
+    const awayDrop1T = parseInt(document.getElementById('away-drop-1t').value) || 0;
+    
+    const awayMete2T = parseInt(document.getElementById('away-mete-2t').value) || 0;
+    const awayTrasf2T = parseInt(document.getElementById('away-trasf-2t').value) || 0;
+    const awayPuniz2T = parseInt(document.getElementById('away-puniz-2t').value) || 0;
+    const awayDrop2T = parseInt(document.getElementById('away-drop-2t').value) || 0;
+    
+    const awayMeteTot = awayMete1T + awayMete2T;
+    const awayTrasfTot = awayTrasf1T + awayTrasf2T;
+    const awayPunizTot = awayPuniz1T + awayPuniz2T;
+    const awayDropTot = awayDrop1T + awayDrop2T;
+    
+    // Aggiorna i totali nella tabella
+    document.getElementById('away-mete-tot').textContent = awayMeteTot;
+    document.getElementById('away-trasf-tot').textContent = awayTrasfTot;
+    document.getElementById('away-puniz-tot').textContent = awayPunizTot;
+    document.getElementById('away-drop-tot').textContent = awayDropTot;
+    
+    // Calcola il punteggio totale
+    const awayTotal = (awayMeteTot * 5) + (awayTrasfTot * 2) + (awayPunizTot * 3) + (awayDropTot * 3);
+    document.getElementById('away-total-score').textContent = awayTotal;
+}
+
+// Aggiungi event listeners per aggiornare i totali quando i campi vengono modificati
+const rugbyInputs = document.querySelectorAll('#rugby-result-form input[type="number"]');
+rugbyInputs.forEach(input => {
+    input.addEventListener('input', updateRugbyTotals);
+});
+
+// Aggiungi event listener per il pulsante di salvataggio dei risultati
+document.getElementById('save-rugby-result-btn').addEventListener('click', function() {
+    const matchId = document.getElementById('match-id-result').value;
+    const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+    const matchIndex = matches.findIndex(m => m.id === matchId);
+    
+    if (matchIndex === -1) return;
+    
+    // Ottieni tutti i valori dal form
+    const homeMete1T = parseInt(document.getElementById('home-mete-1t').value) || 0;
+    const homeTrasf1T = parseInt(document.getElementById('home-trasf-1t').value) || 0;
+    const homePuniz1T = parseInt(document.getElementById('home-puniz-1t').value) || 0;
+    const homeDrop1T = parseInt(document.getElementById('home-drop-1t').value) || 0;
+    
+    const homeMete2T = parseInt(document.getElementById('home-mete-2t').value) || 0;
+    const homeTrasf2T = parseInt(document.getElementById('home-trasf-2t').value) || 0;
+    const homePuniz2T = parseInt(document.getElementById('home-puniz-2t').value) || 0;
+    const homeDrop2T = parseInt(document.getElementById('home-drop-2t').value) || 0;
+    
+    const awayMete1T = parseInt(document.getElementById('away-mete-1t').value) || 0;
+    const awayTrasf1T = parseInt(document.getElementById('away-trasf-1t').value) || 0;
+    const awayPuniz1T = parseInt(document.getElementById('away-puniz-1t').value) || 0;
+    const awayDrop1T = parseInt(document.getElementById('away-drop-1t').value) || 0;
+    
+    const awayMete2T = parseInt(document.getElementById('away-mete-2t').value) || 0;
+    const awayTrasf2T = parseInt(document.getElementById('away-trasf-2t').value) || 0;
+    const awayPuniz2T = parseInt(document.getElementById('away-puniz-2t').value) || 0;
+    const awayDrop2T = parseInt(document.getElementById('away-drop-2t').value) || 0;
+    
+    // Ottieni lo stato della partita
+    const matchStatus = document.querySelector('input[name="match-status"]:checked').value;
+    
+    // Calcola i punteggi totali
+    const homeTotal = (homeMete1T + homeMete2T) * 5 + (homeTrasf1T + homeTrasf2T) * 2 + 
+                      (homePuniz1T + homePuniz2T) * 3 + (homeDrop1T + homeDrop2T) * 3;
+    
+    const awayTotal = (awayMete1T + awayMete2T) * 5 + (awayTrasf1T + awayTrasf2T) * 2 + 
+                      (awayPuniz1T + awayPuniz2T) * 3 + (awayDrop1T + awayDrop2T) * 3;
+    
+    // Aggiorna l'oggetto partita
+    matches[matchIndex].rugbyDetails = {
+        home: {
+            periodo1: {
+                mete: homeMete1T,
+                trasformazioni: homeTrasf1T,
+                punizioni: homePuniz1T,
+                drop: homeDrop1T
+            },
+            periodo2: {
+                mete: homeMete2T,
+                trasformazioni: homeTrasf2T,
+                punizioni: homePuniz2T,
+                drop: homeDrop2T
+            }
+        },
+        away: {
+            periodo1: {
+                mete: awayMete1T,
+                trasformazioni: awayTrasf1T,
+                punizioni: awayPuniz1T,
+                drop: awayDrop1T
+            },
+            periodo2: {
+                mete: awayMete2T,
+                trasformazioni: awayTrasf2T,
+                punizioni: awayPuniz2T,
+                drop: awayDrop2T
+            }
+        }
+    };
+    
+    matches[matchIndex].homeScore = homeTotal;
+    matches[matchIndex].awayScore = awayTotal;
+    matches[matchIndex].played = true;
+    matches[matchIndex].status = matchStatus;
+    
+    // Salva le modifiche
+    localStorage.setItem('rugbyMatches', JSON.stringify(matches));
+    
+    // Aggiorna la visualizzazione
+    renderMatches();
+    
+    // Ricalcola la classifica
+    calculateStandings();
+    renderStandings();
+    
+    // Chiudi il modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('rugbyResultModal'));
+    modal.hide();
+    
+    alert('Risultato salvato con successo!');
+}); 

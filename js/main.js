@@ -36,25 +36,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 calendar.changeView('dayGridMonth');
             }
         },
-        events: [
-            {
-                title: 'Leoni vs Tigri',
-                start: '2024-04-15T15:00:00',
-                end: '2024-04-15T17:00:00'
-            },
-            {
-                title: 'Orsi vs Lupi',
-                start: '2024-04-22T15:00:00',
-                end: '2024-04-22T17:00:00'
-            },
-            {
-                title: 'Finale Torneo',
-                start: '2024-05-01T16:00:00',
-                end: '2024-05-01T18:00:00'
-            }
-        ]
+        eventClick: function(info) {
+            // Reindirizza alla pagina dei dettagli della partita
+            window.location.href = 'partita.html?id=' + info.event.id;
+        },
+        events: function(fetchInfo, successCallback, failureCallback) {
+            // Ottiene le partite dal localStorage
+            const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+            const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+            
+            const events = matches.map(match => {
+                const homeTeam = teams.find(team => team.id === match.homeTeam) || { name: 'Squadra Sconosciuta' };
+                const awayTeam = teams.find(team => team.id === match.awayTeam) || { name: 'Squadra Sconosciuta' };
+                
+                // Calcola il punteggio totale
+                let homeScore = match.homeScore;
+                let awayScore = match.awayScore;
+                
+                if (match.rugbyDetails) {
+                    const homeDetails = match.rugbyDetails.home;
+                    const awayDetails = match.rugbyDetails.away;
+                    
+                    homeScore = (homeDetails.periodo1.mete + homeDetails.periodo2.mete) * 5 + 
+                               (homeDetails.periodo1.trasformazioni + homeDetails.periodo2.trasformazioni) * 2 + 
+                               (homeDetails.periodo1.punizioni + homeDetails.periodo2.punizioni) * 3 + 
+                               (homeDetails.periodo1.drop + homeDetails.periodo2.drop) * 3;
+                    
+                    awayScore = (awayDetails.periodo1.mete + awayDetails.periodo2.mete) * 5 + 
+                               (awayDetails.periodo1.trasformazioni + awayDetails.periodo2.trasformazioni) * 2 + 
+                               (awayDetails.periodo1.punizioni + awayDetails.periodo2.punizioni) * 3 + 
+                               (awayDetails.periodo1.drop + awayDetails.periodo2.drop) * 3;
+                }
+                
+                // Crea il titolo con il punteggio se la partita è stata giocata
+                let title = `${homeTeam.name} vs ${awayTeam.name}`;
+                if (match.played) {
+                    title += ` (${homeScore} - ${awayScore})`;
+                    if (match.status === 'sospesa') {
+                        title += ' [SOSPESA]';
+                    }
+                }
+                
+                return {
+                    id: match.id,
+                    title: title,
+                    start: match.date,
+                    backgroundColor: match.played ? (match.status === 'sospesa' ? '#dc3545' : '#28a745') : '#007bff',
+                    textColor: '#ffffff',
+                    borderColor: match.played ? (match.status === 'sospesa' ? '#b21e2d' : '#218838') : '#0069d9',
+                    url: null // Non usare l'url predefinito, ma gestire il click con eventClick
+                };
+            });
+            
+            successCallback(events);
+        }
     });
     calendar.render();
+
+    // Carica la classifica
+    loadStandings();
 
     // Gestione del form di iscrizione
     const formIscrizione = document.getElementById('form-iscrizione');
@@ -139,4 +179,68 @@ document.addEventListener('DOMContentLoaded', function() {
     // Aggiorna le informazioni del prossimo incontro
     document.getElementById('prossima-data').textContent = new Date(prossimoIncontro.data).toLocaleDateString('it-IT');
     document.getElementById('prossime-squadre').textContent = prossimoIncontro.squadre;
-}); 
+});
+
+// Carica la classifica
+function loadStandings() {
+    const standingsTable = document.getElementById('standings-table');
+    if (!standingsTable) return;
+    
+    const standings = JSON.parse(localStorage.getItem('rugbyStandings')) || [];
+    
+    // Ordina per punti
+    standings.sort((a, b) => b.points - a.points);
+    
+    if (standings.length === 0) {
+        standingsTable.innerHTML = '<tr><td colspan="8" class="text-center">Nessuna squadra in classifica</td></tr>';
+        return;
+    }
+    
+    standingsTable.innerHTML = '';
+    
+    standings.forEach((team, index) => {
+        // Calcola il numero di mete fatte e subite dalle statistiche delle partite
+        let meteFatte = 0;
+        let meteSubite = 0;
+        
+        // Verifica se ci sono dati delle mete
+        if (team.scored !== undefined) {
+            meteFatte = team.scored;
+            meteSubite = team.conceded;
+        } else {
+            // Cerca le partite giocate dalla squadra
+            const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+            const teamMatches = matches.filter(match => 
+                (match.homeTeam === team.id || match.awayTeam === team.id) && match.played);
+            
+            teamMatches.forEach(match => {
+                if (match.rugbyDetails) {
+                    if (match.homeTeam === team.id) {
+                        // La squadra è quella di casa
+                        meteFatte += match.rugbyDetails.home.periodo1.mete + match.rugbyDetails.home.periodo2.mete;
+                        meteSubite += match.rugbyDetails.away.periodo1.mete + match.rugbyDetails.away.periodo2.mete;
+                    } else {
+                        // La squadra è quella ospite
+                        meteFatte += match.rugbyDetails.away.periodo1.mete + match.rugbyDetails.away.periodo2.mete;
+                        meteSubite += match.rugbyDetails.home.periodo1.mete + match.rugbyDetails.home.periodo2.mete;
+                    }
+                }
+            });
+        }
+        
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${team.name}</td>
+            <td><strong>${team.points}</strong></td>
+            <td>${team.played}</td>
+            <td>${team.won}</td>
+            <td>${team.lost}</td>
+            <td>${meteFatte}</td>
+            <td>${meteSubite}</td>
+        `;
+        
+        standingsTable.appendChild(row);
+    });
+} 
