@@ -1,0 +1,82 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+#form-iscrizione {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.btn-primary {
+    background-color: #1a237e;
+    border-color: #1a237e;
+}
+
+.btn-primary:hover {
+    background-color: #0d47a1;
+    border-color: #0d47a1;
+}
+
+section {
+    padding: 2rem 0;
+}
+
+h2 {
+    color: #1a237e;
+    margin-bottom: 1.5rem;
+}
+
+.card-title {
+    color: #1a237e;
+}
+
+/* Stili per il calendario */
+#calendar {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+}
+
+.fc-event {
+    background-color: #1a237e;
+    border-color: #1a237e;
+}
+
+.fc-button-primary {
+    background-color: #1a237e !important;
+    border-color: #1a237e !important;
+}
+
+/* Stili per la galleria */
+.gallery-card {
+    transition: transform 0.3s ease;
+}
+
+.gallery-card:hover {
+    transform: translateY(-10px);
+}
+
+.gallery-card img {
+    height: 250px;
+    object-fit: cover;
+}
+
+.card-img-top {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+} 

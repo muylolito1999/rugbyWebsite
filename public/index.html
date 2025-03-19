@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torneo Rugby</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <!-- Custom CSS -->
+    <link href="css/style.css" rel="stylesheet">
+    <!-- EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Torneo Rugby</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#squadre">Squadre</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#calendario">Calendario</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#classifica">Classifica</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#iscrizione">Iscrizione</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <section id="home" class="mb-5">
+            <h2>Benvenuti al Torneo Rugby</h2>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Informazioni Generali</h5>
+                            <p class="card-text">
+                                Benvenuti alla pagina ufficiale del torneo di rugby. Qui potrete trovare tutte le informazioni
+                                relative alle squadre partecipanti, il calendario delle partite e la classifica aggiornata.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Prossimo Incontro</h5>
+                            <p class="card-text">Data: <span id="prossima-data">-</span></p>
+                            <p class="card-text">Squadre: <span id="prossime-squadre">-</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="iscrizione" class="mb-5">
+            <h2>Iscrizione Squadra</h2>
+            <div class="card">
+                <div class="card-body">
+                    <form id="form-iscrizione">
+                        <div class="mb-3">
+                            <label for="nome-squadra" class="form-label">Nome Squadra</label>
+                            <input type="text" class="form-control" id="nome-squadra" name="nomeSquadra" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label">Categoria</label>
+                            <select class="form-select" id="categoria" name="categoria" required>
+                                <option value="">Seleziona categoria</option>
+                                <option value="senior">Senior</option>
+                                <option value="junior">Junior</option>
+                                <option value="amatori">Amatori</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email di contatto</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Telefono</label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Invia Iscrizione</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="calendario" class="mb-5">
+            <h2>Calendario Partite</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="galleria" class="mb-5">
+            <h2>Galleria Fotografica</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="images/rugby1.jpg" class="card-img-top" alt="Partita di Rugby">
+                        <div class="card-body">
+                            <p class="card-text">Finale Torneo 2023</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="images/rugby2.jpg" class="card-img-top" alt="Partita di Rugby">
+                        <div class="card-body">
+                            <p class="card-text">Semifinale - Leoni vs Tigri</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="images/rugby3.jpg" class="card-img-top" alt="Partita di Rugby">
+                        <div class="card-body">
+                            <p class="card-text">Premiazione Squadra Campione</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js'></script>
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+</body>
+</html> 
