@@ -1,6 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inizializzazione applicazione...');
+    
     // Inizializzazione EmailJS
-    emailjs.init("_tgxLcltA1eWDBu-W"); // Public Key
+    try {
+        emailjs.init("_tgxLcltA1eWDBu-W");
+        console.log('EmailJS inizializzato con successo');
+    } catch (error) {
+        console.error('Errore durante l\'inizializzazione di EmailJS:', error);
+    }
 
     // Inizializzazione del calendario
     const calendarEl = document.getElementById('calendar');
@@ -35,8 +42,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestione del form di iscrizione
     const formIscrizione = document.getElementById('form-iscrizione');
     
+    if (!formIscrizione) {
+        console.error('Form di iscrizione non trovato nel DOM');
+    } else {
+        console.log('Form di iscrizione trovato e configurato');
+    }
+    
     formIscrizione.addEventListener('submit', async function(e) {
         e.preventDefault();
+        console.log('Form sottomesso, inizio processo di invio...');
         
         // Mostra un messaggio di caricamento
         const submitButton = formIscrizione.querySelector('button[type="submit"]');
@@ -45,6 +59,15 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.disabled = true;
 
         try {
+            // Log dei valori del form
+            const formData = {
+                nomeSquadra: document.getElementById('nome-squadra').value,
+                categoria: document.getElementById('categoria').value,
+                email: document.getElementById('email').value,
+                telefono: document.getElementById('telefono').value
+            };
+            console.log('Dati del form raccolti:', formData);
+
             // Prepara i dati per l'email
             const now = new Date();
             const dateStr = now.toLocaleDateString('it-IT', {
@@ -54,28 +77,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 hour: '2-digit',
                 minute: '2-digit'
             });
+            console.log('Data formattata:', dateStr);
 
             const templateParams = {
                 to_email: 'muylolito1999@gmail.com',
-                nomeSquadra: document.getElementById('nome-squadra').value,
-                categoria: document.getElementById('categoria').value,
-                email: document.getElementById('email').value,
-                telefono: document.getElementById('telefono').value,
+                nomeSquadra: formData.nomeSquadra,
+                categoria: formData.categoria,
+                email: formData.email,
+                telefono: formData.telefono,
                 date: dateStr
             };
+            console.log('Parametri template preparati:', templateParams);
 
             // Invia l'email usando il tuo servizio e template
-            await emailjs.send('service_4zm2m4t', 'template_slk1ikr', templateParams);
+            console.log('Tentativo di invio email con service_4zm2m4t e template_slk1ikr...');
+            const response = await emailjs.send('service_4zm2m4t', 'template_slk1ikr', templateParams);
+            console.log('Risposta da EmailJS:', response);
             
             alert('Iscrizione inviata con successo!');
             formIscrizione.reset();
+            console.log('Form resettato dopo invio con successo');
         } catch (error) {
-            console.error('Errore durante l\'invio dei dati:', error);
-            alert('Si è verificato un errore durante l\'invio dei dati. Riprova più tardi.');
+            console.error('Dettagli completi dell\'errore:', {
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                error: error
+            });
+            alert('Si è verificato un errore durante l\'invio dei dati. Riprova più tardi.\nErrore: ' + error.message);
         } finally {
             // Ripristina il pulsante
             submitButton.textContent = originalText;
             submitButton.disabled = false;
+            console.log('Pulsante di submit ripristinato');
         }
     });
 
