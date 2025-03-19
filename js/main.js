@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Inizializzazione EmailJS
-    emailjs.init("YOUR_USER_ID"); // Sostituisci con il tuo User ID di EmailJS
+    emailjs.init("_tgxLcltA1eWDBu-W"); // Public Key
 
     // Inizializzazione del calendario
     const calendarEl = document.getElementById('calendar');
@@ -47,14 +47,15 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Prepara i dati per l'email
             const templateParams = {
+                to_email: 'muylolito1999@gmail.com',
                 nomeSquadra: document.getElementById('nome-squadra').value,
                 categoria: document.getElementById('categoria').value,
                 email: document.getElementById('email').value,
                 telefono: document.getElementById('telefono').value
             };
 
-            // Invia l'email
-            await emailjs.send('service_4zm2m4t', 'template_0r5mdvu', templateParams);
+            // Invia l'email usando il tuo servizio e template
+            await emailjs.send('service_4zm2m4t', 'template_slk1ikr', templateParams);
             
             alert('Iscrizione inviata con successo!');
             formIscrizione.reset();
