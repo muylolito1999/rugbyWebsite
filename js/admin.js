@@ -375,51 +375,392 @@ function initData() {
     // Squadre
     if (!localStorage.getItem('rugbyTeams')) {
         const exampleTeams = [
-            { id: generateId(), name: 'Leoni Rugby', category: 'senior', email: 'leoni@example.com', phone: '3334445556' },
-            { id: generateId(), name: 'Tigri Rugby', category: 'senior', email: 'tigri@example.com', phone: '3334445557' },
-            { id: generateId(), name: 'Orsi Rugby', category: 'junior', email: 'orsi@example.com', phone: '3334445558' },
-            { id: generateId(), name: 'Lupi Rugby', category: 'junior', email: 'lupi@example.com', phone: '3334445559' }
+            { id: generateId(), name: 'Rugby Rovigo', category: 'senior', email: 'info@rugbyrovigo.it', phone: '0425123456' },
+            { id: generateId(), name: 'Petrarca Padova', category: 'senior', email: 'info@petrarcapadova.it', phone: '0495678901' },
+            { id: generateId(), name: 'Benetton Treviso', category: 'senior', email: 'info@benettonrugby.it', phone: '0422112233' },
+            { id: generateId(), name: 'Fiamme Oro Rugby', category: 'senior', email: 'info@fiammeororugby.it', phone: '0688112233' },
+            { id: generateId(), name: 'Rugby Viadana', category: 'senior', email: 'info@rugbyviadana.it', phone: '0375123456' },
+            { id: generateId(), name: 'Valorugby Emilia', category: 'senior', email: 'info@valorugby.it', phone: '0522334455' },
+            { id: generateId(), name: 'Rugby Calvisano', category: 'senior', email: 'info@rugbycalvisano.it', phone: '0309876543' },
+            { id: generateId(), name: 'Lazio Rugby', category: 'senior', email: 'info@laziorugby.it', phone: '0645678901' },
+            { id: generateId(), name: 'Rugby Colorno', category: 'senior', email: 'info@rugbycolorno.it', phone: '0521445566' },
+            { id: generateId(), name: 'Rugby Lyons', category: 'senior', email: 'info@rugbylyons.it', phone: '0523778899' }
         ];
         localStorage.setItem('rugbyTeams', JSON.stringify(exampleTeams));
     }
-    
+
+    // Arbitri
+    if (!localStorage.getItem('rugbyReferees')) {
+        const exampleReferees = [
+            { id: generateId(), name: 'Marco', surname: 'Rossi', email: 'marco.rossi@referee.it', phone: '3331112223', level: 'national' },
+            { id: generateId(), name: 'Luigi', surname: 'Bianchi', email: 'luigi.bianchi@referee.it', phone: '3334445556', level: 'regional' },
+            { id: generateId(), name: 'Andrea', surname: 'Verdi', email: 'andrea.verdi@referee.it', phone: '3337778889', level: 'international' },
+            { id: generateId(), name: 'Francesca', surname: 'Neri', email: 'francesca.neri@referee.it', phone: '3335556667', level: 'national' },
+            { id: generateId(), name: 'Giuseppe', surname: 'Marrone', email: 'giuseppe.marrone@referee.it', phone: '3339998887', level: 'regional' }
+        ];
+        localStorage.setItem('rugbyReferees', JSON.stringify(exampleReferees));
+    }
+
     // Partite
     if (!localStorage.getItem('rugbyMatches')) {
-        const teams = JSON.parse(localStorage.getItem('rugbyTeams'));
-        if (teams && teams.length >= 4) {
+        // Prima recuperiamo i team ID per poterli usare nelle partite
+        const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+        const referees = JSON.parse(localStorage.getItem('rugbyReferees')) || [];
+        
+        if (teams.length >= 4 && referees.length >= 2) {
+            const teamIds = teams.map(team => team.id);
+            const refereeIds = referees.map(referee => referee.id);
+            
+            // Crea partite di esempio
+            const today = new Date();
+            const oneDay = 24 * 60 * 60 * 1000; // millisecondi in un giorno
+            
             const exampleMatches = [
-                { 
-                    id: generateId(), 
-                    date: '2024-04-15T15:00:00', 
-                    homeTeam: teams[0].id, 
-                    awayTeam: teams[1].id, 
-                    homeScore: 24, 
-                    awayScore: 18, 
-                    played: true 
+                // Partite già giocate
+                {
+                    id: generateId(),
+                    date: new Date(today.getTime() - (15 * oneDay)).toISOString(), // 15 giorni fa
+                    homeTeam: teamIds[0],
+                    awayTeam: teamIds[1],
+                    referee: refereeIds[0],
+                    location: 'Stadio Battaglini, Rovigo',
+                    homeScore: 27,
+                    awayScore: 22,
+                    played: true,
+                    status: 'disputata',
+                    rugbyDetails: {
+                        home: {
+                            periodo1: {
+                                mete: 2,
+                                trasformazioni: 1,
+                                punizioni: 2,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 1,
+                                trasformazioni: 1,
+                                punizioni: 1,
+                                drop: 0
+                            }
+                        },
+                        away: {
+                            periodo1: {
+                                mete: 1,
+                                trasformazioni: 1,
+                                punizioni: 1,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 2,
+                                trasformazioni: 1,
+                                punizioni: 1,
+                                drop: 0
+                            }
+                        }
+                    }
                 },
-                { 
-                    id: generateId(), 
-                    date: '2024-04-22T15:00:00', 
-                    homeTeam: teams[2].id, 
-                    awayTeam: teams[3].id, 
-                    homeScore: null, 
-                    awayScore: null, 
-                    played: false 
+                {
+                    id: generateId(),
+                    date: new Date(today.getTime() - (10 * oneDay)).toISOString(), // 10 giorni fa
+                    homeTeam: teamIds[2],
+                    awayTeam: teamIds[3],
+                    referee: refereeIds[1],
+                    location: 'Monigo Stadium, Treviso',
+                    homeScore: 35,
+                    awayScore: 18,
+                    played: true,
+                    status: 'disputata',
+                    rugbyDetails: {
+                        home: {
+                            periodo1: {
+                                mete: 3,
+                                trasformazioni: 2,
+                                punizioni: 1,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 2,
+                                trasformazioni: 2,
+                                punizioni: 0,
+                                drop: 1
+                            }
+                        },
+                        away: {
+                            periodo1: {
+                                mete: 1,
+                                trasformazioni: 1,
+                                punizioni: 2,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 1,
+                                trasformazioni: 0,
+                                punizioni: 1,
+                                drop: 0
+                            }
+                        }
+                    }
                 },
-                { 
-                    id: generateId(), 
-                    date: '2024-05-01T16:00:00', 
-                    homeTeam: teams[0].id, 
-                    awayTeam: teams[2].id, 
-                    homeScore: null, 
-                    awayScore: null, 
-                    played: false 
+                {
+                    id: generateId(),
+                    date: new Date(today.getTime() - (8 * oneDay)).toISOString(), // 8 giorni fa
+                    homeTeam: teamIds[4],
+                    awayTeam: teamIds[5],
+                    referee: refereeIds[2],
+                    location: 'Stadio Zaffanella, Viadana',
+                    homeScore: 22,
+                    awayScore: 22,
+                    played: true,
+                    status: 'disputata',
+                    rugbyDetails: {
+                        home: {
+                            periodo1: {
+                                mete: 2,
+                                trasformazioni: 1,
+                                punizioni: 2,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 1,
+                                trasformazioni: 1,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        },
+                        away: {
+                            periodo1: {
+                                mete: 2,
+                                trasformazioni: 1,
+                                punizioni: 1,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 1,
+                                trasformazioni: 1,
+                                punizioni: 1,
+                                drop: 0
+                            }
+                        }
+                    }
+                },
+                {
+                    id: generateId(),
+                    date: new Date(today.getTime() - (5 * oneDay)).toISOString(), // 5 giorni fa
+                    homeTeam: teamIds[1],
+                    awayTeam: teamIds[2],
+                    referee: refereeIds[3],
+                    location: 'Plebiscito, Padova',
+                    homeScore: 30,
+                    awayScore: 24,
+                    played: true,
+                    status: 'disputata',
+                    rugbyDetails: {
+                        home: {
+                            periodo1: {
+                                mete: 2,
+                                trasformazioni: 2,
+                                punizioni: 2,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 2,
+                                trasformazioni: 1,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        },
+                        away: {
+                            periodo1: {
+                                mete: 2,
+                                trasformazioni: 2,
+                                punizioni: 1,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 1,
+                                trasformazioni: 1,
+                                punizioni: 1,
+                                drop: 0
+                            }
+                        }
+                    }
+                },
+                {
+                    id: generateId(),
+                    date: new Date(today.getTime() - (3 * oneDay)).toISOString(), // 3 giorni fa
+                    homeTeam: teamIds[6],
+                    awayTeam: teamIds[7],
+                    referee: refereeIds[0],
+                    location: 'San Michele, Calvisano',
+                    homeScore: 28,
+                    awayScore: 15,
+                    played: true,
+                    status: 'disputata',
+                    rugbyDetails: {
+                        home: {
+                            periodo1: {
+                                mete: 2,
+                                trasformazioni: 1,
+                                punizioni: 2,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 2,
+                                trasformazioni: 2,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        },
+                        away: {
+                            periodo1: {
+                                mete: 1,
+                                trasformazioni: 1,
+                                punizioni: 1,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 1,
+                                trasformazioni: 0,
+                                punizioni: 1,
+                                drop: 0
+                            }
+                        }
+                    }
+                },
+                
+                // Partite future
+                {
+                    id: generateId(),
+                    date: new Date(today.getTime() + (2 * oneDay)).toISOString(), // tra 2 giorni
+                    homeTeam: teamIds[0],
+                    awayTeam: teamIds[2],
+                    referee: refereeIds[4],
+                    location: 'Stadio Battaglini, Rovigo',
+                    homeScore: 0,
+                    awayScore: 0,
+                    played: false,
+                    status: 'disputata',
+                    rugbyDetails: {
+                        home: {
+                            periodo1: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        },
+                        away: {
+                            periodo1: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        }
+                    }
+                },
+                {
+                    id: generateId(),
+                    date: new Date(today.getTime() + (5 * oneDay)).toISOString(), // tra 5 giorni
+                    homeTeam: teamIds[3],
+                    awayTeam: teamIds[5],
+                    referee: refereeIds[1],
+                    location: 'Campo Gelsomini, Roma',
+                    homeScore: 0,
+                    awayScore: 0,
+                    played: false,
+                    status: 'disputata',
+                    rugbyDetails: {
+                        home: {
+                            periodo1: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        },
+                        away: {
+                            periodo1: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        }
+                    }
+                },
+                {
+                    id: generateId(),
+                    date: new Date(today.getTime() + (10 * oneDay)).toISOString(), // tra 10 giorni
+                    homeTeam: teamIds[1],
+                    awayTeam: teamIds[3],
+                    referee: refereeIds[2],
+                    location: 'Plebiscito, Padova',
+                    homeScore: 0,
+                    awayScore: 0,
+                    played: false,
+                    status: 'disputata',
+                    rugbyDetails: {
+                        home: {
+                            periodo1: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        },
+                        away: {
+                            periodo1: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            },
+                            periodo2: {
+                                mete: 0,
+                                trasformazioni: 0,
+                                punizioni: 0,
+                                drop: 0
+                            }
+                        }
+                    }
                 }
             ];
+            
             localStorage.setItem('rugbyMatches', JSON.stringify(exampleMatches));
         }
     }
-    
+
     // Contenuti
     if (!localStorage.getItem('rugbyContents')) {
         const exampleContents = [
@@ -427,8 +768,8 @@ function initData() {
                 id: generateId(), 
                 title: 'Inizia il torneo di rugby 2024', 
                 type: 'news', 
-                text: 'Il torneo di rugby 2024 inizierà il 15 aprile con la prima partita tra Leoni e Tigri. Tutti i tifosi sono invitati a partecipare a questo importante evento di apertura della stagione.', 
-                image: '', 
+                text: 'Il torneo di rugby 2024 inizierà il 15 aprile con la prima partita tra Rovigo e Padova. Tutti i tifosi sono invitati a partecipare a questo importante evento di apertura della stagione. Lo Stadio Battaglini di Rovigo si prepara ad accogliere migliaia di appassionati per quello che si preannuncia come uno degli incontri più attesi della stagione. Le due squadre si presentano in ottima forma dopo un intenso periodo di preparazione estiva.', 
+                image: 'https://www.federugby.it/images/6_nazioni_3.jpg', 
                 date: new Date().toISOString(),
                 visible: true
             },
@@ -436,36 +777,48 @@ function initData() {
                 id: generateId(), 
                 title: 'Nuove regole per il torneo', 
                 type: 'announcement', 
-                text: 'La federazione ha introdotto nuove regole per il torneo di quest\'anno. Tutte le squadre sono pregate di prendere visione del regolamento aggiornato disponibile presso la segreteria.', 
-                image: '', 
+                text: 'La federazione ha introdotto nuove regole per il torneo di quest\'anno. Tutte le squadre sono pregate di prendere visione del regolamento aggiornato disponibile presso la segreteria. In particolare, si segnala la modifica del punteggio per i pareggi che passa da 2 a 1 punto per ciascuna squadra, in linea con i regolamenti internazionali. Rimangono invariati i bonus per le mete (1 punto per chi segna 4 o più mete) e per le sconfitte di misura (1 punto per chi perde con meno di 7 punti di scarto).', 
+                image: 'https://www.federugby.it/images/regolamento-t.jpg', 
                 date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 giorni fa
                 visible: true
             },
             { 
                 id: generateId(), 
-                title: 'Bozza: Calendario completo', 
+                title: 'Intervista a Marco Rossi, arbitro internazionale', 
                 type: 'article', 
-                text: 'Questa è una bozza del calendario completo del torneo. Le date potrebbero subire variazioni, si prega di controllare regolarmente il sito per aggiornamenti.', 
-                image: '', 
+                text: 'Abbiamo intervistato Marco Rossi, uno degli arbitri più rispettati del circuito internazionale, che dirigerà numerose partite del nostro torneo. "Il rugby è uno sport basato sul rispetto", ci racconta Rossi, "e questo vale sia per i giocatori che per gli arbitri. La comunicazione in campo è fondamentale, così come la preparazione fisica e mentale prima di ogni incontro." Rossi ha anche parlato delle nuove direttive arbitrali che saranno applicate in questa stagione, con particolare attenzione alla sicurezza dei giocatori nelle fasi di contatto e mischia.', 
+                image: 'https://www.federugby.it/images/referee.jpg', 
                 date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 giorni fa
+                visible: true
+            },
+            { 
+                id: generateId(), 
+                title: 'Benetton Treviso: obiettivo vittoria', 
+                type: 'article', 
+                text: 'Il Benetton Treviso si prepara alla nuova stagione con rinnovate ambizioni. Dopo gli ottimi risultati dello scorso anno, la squadra veneta punta al titolo. "Abbiamo lavorato duramente durante la preparazione", dichiara l\'allenatore, "e siamo pronti a dare il massimo in ogni partita. Il gruppo è coeso e i nuovi innesti si sono perfettamente integrati." Il Benetton potrà contare su un reparto di trequarti particolarmente talentuoso e su una mischia solida, elementi che potrebbero fare la differenza negli incontri più combattuti.', 
+                image: 'https://www.benettonrugby.it/wp-content/uploads/2021/09/benetton-rugby.jpg', 
+                date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(), // 8 giorni fa
+                visible: true
+            },
+            { 
+                id: generateId(), 
+                title: 'Bozza: Calendario completo', 
+                type: 'announcement', 
+                text: 'Questa è una bozza del calendario completo del torneo. Le date potrebbero subire variazioni, si prega di controllare regolarmente il sito per aggiornamenti. Il torneo si svolgerà da aprile a giugno, con una fase a gironi seguita da semifinali e finale. Ogni squadra affronterà le altre del proprio girone in partite di andata e ritorno. I campi designati per le semifinali sono lo Stadio Battaglini di Rovigo e il Monigo Stadium di Treviso, mentre la finale si disputerà allo Stadio Plebiscito di Padova.', 
+                image: 'https://www.federugby.it/images/calendario.jpg', 
+                date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(), // 12 giorni fa
                 visible: false
             }
         ];
         localStorage.setItem('rugbyContents', JSON.stringify(exampleContents));
     }
-    
-    // Classifica
+
+    // Calcola la classifica se non esiste
     if (!localStorage.getItem('rugbyStandings')) {
         calculateStandings();
-    }
-
-    // Arbitri
-    if (!localStorage.getItem('rugbyReferees')) {
-        const exampleReferees = [
-            { id: generateId(), name: 'Marco', surname: 'Rossi', email: 'marco.rossi@example.com', phone: '3331112223', level: 'national' },
-            { id: generateId(), name: 'Luigi', surname: 'Bianchi', email: 'luigi.bianchi@example.com', phone: '3334445556', level: 'regional' }
-        ];
-        localStorage.setItem('rugbyReferees', JSON.stringify(exampleReferees));
+    } else {
+        // Ricalcola comunque la classifica per assicurarsi che sia aggiornata
+        calculateStandings();
     }
 }
 
@@ -1143,8 +1496,8 @@ function calculateStandings() {
         } else {
             homeTeam.drawn++;
             awayTeam.drawn++;
-            homeTeam.points += 2; // 2 punti per il pareggio
-            awayTeam.points += 2; // 2 punti per il pareggio
+            homeTeam.points += 1; // 1 punto per il pareggio (modificato da 2 a 1)
+            awayTeam.points += 1; // 1 punto per il pareggio (modificato da 2 a 1)
         }
         
         // Bonus punti per chi segna 4 o più mete (1 punto extra)
@@ -1519,7 +1872,6 @@ function deleteReferee(refereeId) {
     
     // Aggiorna la visualizzazione
     renderReferees();
-    renderMatches();
     populateRefereeSelect();
     updateStatistics();
 }

@@ -98,6 +98,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Carica i contenuti
     loadContents();
+    
+    // Aggiorna le informazioni del prossimo incontro
+    updateNextMatch();
 
     // Gestione del form di iscrizione
     const formIscrizione = document.getElementById('form-iscrizione');
@@ -172,17 +175,48 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Pulsante di submit ripristinato');
         }
     });
-
-    // Dati di esempio per il prossimo incontro
-    const prossimoIncontro = {
-        data: '2024-04-15',
-        squadre: 'Leoni vs Tigri'
-    };
-
-    // Aggiorna le informazioni del prossimo incontro
-    document.getElementById('prossima-data').textContent = new Date(prossimoIncontro.data).toLocaleDateString('it-IT');
-    document.getElementById('prossime-squadre').textContent = prossimoIncontro.squadre;
 });
+
+// Funzione per aggiornare le informazioni sul prossimo incontro
+function updateNextMatch() {
+    const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+    const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+    
+    // Trova la prossima partita (prima partita futura)
+    const now = new Date();
+    const upcomingMatches = matches
+        .filter(match => !match.played && new Date(match.date) > now)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    if (upcomingMatches.length > 0) {
+        const nextMatch = upcomingMatches[0];
+        const homeTeam = teams.find(team => team.id === nextMatch.homeTeam) || { name: 'Squadra sconosciuta' };
+        const awayTeam = teams.find(team => team.id === nextMatch.awayTeam) || { name: 'Squadra sconosciuta' };
+        
+        const matchDate = new Date(nextMatch.date);
+        document.getElementById('prossima-data').textContent = matchDate.toLocaleDateString('it-IT', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        document.getElementById('prossime-squadre').textContent = `${homeTeam.name} vs ${awayTeam.name}`;
+        
+        // Se c'è un luogo, mostralo
+        if (nextMatch.location) {
+            // Verifica se esiste l'elemento per il luogo
+            const luogoElement = document.getElementById('prossimo-luogo');
+            if (luogoElement) {
+                luogoElement.textContent = nextMatch.location;
+            }
+        }
+    } else {
+        document.getElementById('prossima-data').textContent = 'Nessuna partita programmata';
+        document.getElementById('prossime-squadre').textContent = '-';
+    }
+}
 
 // Carica la classifica
 function loadStandings() {
