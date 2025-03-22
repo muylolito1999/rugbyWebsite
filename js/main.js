@@ -1,12 +1,6 @@
 /**
- * File principale che importa e coordina tutti i moduli
+ * File principale JavaScript
  */
-import { initCalendar } from './modules/calendar.js';
-import { updateNextMatch } from './modules/next-match.js';
-import { loadStandings } from './modules/standings.js';
-import { loadContents } from './modules/contents.js';
-import { initForm } from './modules/form.js';
-
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Inizializzazione applicazione...');
     
@@ -137,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Aggiorna le informazioni del prossimo incontro
     updateNextMatch();
+    console.log('Funzione updateNextMatch() eseguita');
 
     // Gestione del form di iscrizione
     const formIscrizione = document.getElementById('form-iscrizione');
@@ -145,72 +140,72 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Form di iscrizione non trovato nel DOM');
     } else {
         console.log('Form di iscrizione trovato e configurato');
-    }
-    
-    formIscrizione.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        console.log('Form sottomesso, inizio processo di invio...');
         
-        // Mostra un messaggio di caricamento
-        const submitButton = formIscrizione.querySelector('button[type="submit"]');
-        const originalText = submitButton.textContent;
-        submitButton.textContent = 'Invio in corso...';
-        submitButton.disabled = true;
-
-        try {
-            // Log dei valori del form
-            const formData = {
-                nomeSquadra: document.getElementById('nome-squadra').value,
-                categoria: document.getElementById('categoria').value,
-                email: document.getElementById('email').value,
-                telefono: document.getElementById('telefono').value
-            };
-            console.log('Dati del form raccolti:', formData);
-
-            // Prepara i dati per l'email
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('it-IT', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            console.log('Data formattata:', dateStr);
-
-            const templateParams = {
-                to_email: 'muylolito1999@gmail.com',
-                nomeSquadra: formData.nomeSquadra,
-                categoria: formData.categoria,
-                email: formData.email,
-                telefono: formData.telefono,
-                date: dateStr
-            };
-            console.log('Parametri template preparati:', templateParams);
-
-            // Invia l'email usando il tuo servizio e template
-            console.log('Tentativo di invio email con service_4zm2m4t e template_slk1ikr...');
-            const response = await emailjs.send('service_4zm2m4t', 'template_slk1ikr', templateParams);
-            console.log('Risposta da EmailJS:', response);
+        formIscrizione.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('Form sottomesso, inizio processo di invio...');
             
-            alert('Iscrizione inviata con successo!');
-            formIscrizione.reset();
-            console.log('Form resettato dopo invio con successo');
-        } catch (error) {
-            console.error('Dettagli completi dell\'errore:', {
-                message: error.message,
-                name: error.name,
-                stack: error.stack,
-                error: error
-            });
-            alert('Si è verificato un errore durante l\'invio dei dati. Riprova più tardi.\nErrore: ' + error.message);
-        } finally {
-            // Ripristina il pulsante
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
-            console.log('Pulsante di submit ripristinato');
-        }
-    });
+            // Mostra un messaggio di caricamento
+            const submitButton = formIscrizione.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Invio in corso...';
+            submitButton.disabled = true;
+    
+            try {
+                // Log dei valori del form
+                const formData = {
+                    nomeSquadra: document.getElementById('nome-squadra').value,
+                    categoria: document.getElementById('categoria').value,
+                    email: document.getElementById('email').value,
+                    telefono: document.getElementById('telefono').value
+                };
+                console.log('Dati del form raccolti:', formData);
+    
+                // Prepara i dati per l'email
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('it-IT', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                console.log('Data formattata:', dateStr);
+    
+                const templateParams = {
+                    to_email: 'muylolito1999@gmail.com',
+                    nomeSquadra: formData.nomeSquadra,
+                    categoria: formData.categoria,
+                    email: formData.email,
+                    telefono: formData.telefono,
+                    date: dateStr
+                };
+                console.log('Parametri template preparati:', templateParams);
+    
+                // Invia l'email usando il tuo servizio e template
+                console.log('Tentativo di invio email con service_4zm2m4t e template_slk1ikr...');
+                const response = await emailjs.send('service_4zm2m4t', 'template_slk1ikr', templateParams);
+                console.log('Risposta da EmailJS:', response);
+                
+                alert('Iscrizione inviata con successo!');
+                formIscrizione.reset();
+                console.log('Form resettato dopo invio con successo');
+            } catch (error) {
+                console.error('Dettagli completi dell\'errore:', {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    error: error
+                });
+                alert('Si è verificato un errore durante l\'invio dei dati. Riprova più tardi.\nErrore: ' + error.message);
+            } finally {
+                // Ripristina il pulsante
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                console.log('Pulsante di submit ripristinato');
+            }
+        });
+    }
 });
 
 // Funzione per aggiornare le informazioni sul prossimo incontro
@@ -218,19 +213,37 @@ function updateNextMatch() {
     const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
     const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
     
+    // Elementi DOM
+    const dataElement = document.getElementById('prossima-data');
+    const squadreElement = document.getElementById('prossime-squadre');
+    const luogoElement = document.getElementById('prossimo-luogo');
+    
+    // Verifica che gli elementi esistano nella pagina
+    if (!dataElement || !squadreElement || !luogoElement) {
+        console.error('Elementi DOM per il prossimo incontro non trovati');
+        return;
+    }
+    
     // Trova la prossima partita (prima partita futura)
     const now = new Date();
     const upcomingMatches = matches
         .filter(match => !match.played && new Date(match.date) > now)
         .sort((a, b) => new Date(a.date) - new Date(b.date));
     
+    console.log(`Trovate ${upcomingMatches.length} partite future`);
+    
     if (upcomingMatches.length > 0) {
         const nextMatch = upcomingMatches[0];
         const homeTeam = teams.find(team => team.id === nextMatch.homeTeam) || { name: 'Squadra sconosciuta' };
         const awayTeam = teams.find(team => team.id === nextMatch.awayTeam) || { name: 'Squadra sconosciuta' };
         
+        console.log('Prossimo incontro:', nextMatch);
+        console.log('Squadra casa:', homeTeam.name);
+        console.log('Squadra ospite:', awayTeam.name);
+        console.log('Luogo:', nextMatch.location || 'Da definire');
+        
         const matchDate = new Date(nextMatch.date);
-        document.getElementById('prossima-data').textContent = matchDate.toLocaleDateString('it-IT', {
+        dataElement.textContent = matchDate.toLocaleDateString('it-IT', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -238,19 +251,14 @@ function updateNextMatch() {
             hour: '2-digit',
             minute: '2-digit'
         });
-        document.getElementById('prossime-squadre').textContent = `${homeTeam.name} vs ${awayTeam.name}`;
+        squadreElement.textContent = `${homeTeam.name} vs ${awayTeam.name}`;
         
-        // Se c'è un luogo, mostralo
-        if (nextMatch.location) {
-            // Verifica se esiste l'elemento per il luogo
-            const luogoElement = document.getElementById('prossimo-luogo');
-            if (luogoElement) {
-                luogoElement.textContent = nextMatch.location;
-            }
-        }
+        // Gestione del luogo
+        luogoElement.textContent = nextMatch.location || 'Da definire';
     } else {
-        document.getElementById('prossima-data').textContent = 'Nessuna partita programmata';
-        document.getElementById('prossime-squadre').textContent = '-';
+        dataElement.textContent = 'Nessuna partita programmata';
+        squadreElement.textContent = '-';
+        luogoElement.textContent = '-';
     }
 }
 
