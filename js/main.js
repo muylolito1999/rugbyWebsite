@@ -1,6 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Inizializzazione applicazione...');
     
+    // Controllo se esistono dati
+    const hasMatches = localStorage.getItem('rugbyMatches') !== null;
+    const hasTeams = localStorage.getItem('rugbyTeams') !== null;
+    console.log('Dati disponibili:', { matches: hasMatches, teams: hasTeams });
+    
     // Inizializzazione EmailJS
     try {
         emailjs.init("_tgxLcltA1eWDBu-W");
@@ -77,13 +82,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
+                // Colori per le partite in base allo stato
+                let bgColor, textColor, borderColor;
+                
+                if (match.played) {
+                    if (match.status === 'sospesa') {
+                        bgColor = '#dc3545';     // Rosso per partite sospese
+                        borderColor = '#b21e2d';
+                    } else {
+                        bgColor = '#28a745';     // Verde per partite giocate
+                        borderColor = '#218838';
+                    }
+                } else {
+                    bgColor = '#0d6efd';     // Blu per partite future
+                    borderColor = '#0a58ca';
+                }
+                
                 return {
                     id: match.id,
                     title: title,
                     start: match.date,
-                    backgroundColor: match.played ? (match.status === 'sospesa' ? '#dc3545' : '#28a745') : '#007bff',
-                    textColor: '#ffffff',
-                    borderColor: match.played ? (match.status === 'sospesa' ? '#b21e2d' : '#218838') : '#0069d9',
+                    backgroundColor: bgColor,
+                    textColor: '#ffffff', // Assicura che il testo sia sempre bianco per massimo contrasto
+                    borderColor: borderColor,
                     url: null // Non usare l'url predefinito, ma gestire il click con eventClick
                 };
             });
@@ -101,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Aggiorna le informazioni del prossimo incontro
     updateNextMatch();
+    console.log('Funzione updateNextMatch() eseguita');
 
     // Gestione del form di iscrizione
     const formIscrizione = document.getElementById('form-iscrizione');
@@ -182,6 +204,17 @@ function updateNextMatch() {
     const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
     const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
     
+    // Elementi DOM
+    const dataElement = document.getElementById('prossima-data');
+    const squadreElement = document.getElementById('prossime-squadre');
+    const luogoElement = document.getElementById('prossimo-luogo');
+    
+    // Verifica che gli elementi esistano nella pagina
+    if (!dataElement || !squadreElement || !luogoElement) {
+        console.error('Elementi DOM per il prossimo incontro non trovati');
+        return;
+    }
+    
     // Trova la prossima partita (prima partita futura)
     const now = new Date();
     const upcomingMatches = matches
@@ -194,7 +227,7 @@ function updateNextMatch() {
         const awayTeam = teams.find(team => team.id === nextMatch.awayTeam) || { name: 'Squadra sconosciuta' };
         
         const matchDate = new Date(nextMatch.date);
-        document.getElementById('prossima-data').textContent = matchDate.toLocaleDateString('it-IT', {
+        dataElement.textContent = matchDate.toLocaleDateString('it-IT', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -202,19 +235,14 @@ function updateNextMatch() {
             hour: '2-digit',
             minute: '2-digit'
         });
-        document.getElementById('prossime-squadre').textContent = `${homeTeam.name} vs ${awayTeam.name}`;
+        squadreElement.textContent = `${homeTeam.name} vs ${awayTeam.name}`;
         
-        // Se c'è un luogo, mostralo
-        if (nextMatch.location) {
-            // Verifica se esiste l'elemento per il luogo
-            const luogoElement = document.getElementById('prossimo-luogo');
-            if (luogoElement) {
-                luogoElement.textContent = nextMatch.location;
-            }
-        }
+        // Gestione del luogo
+        luogoElement.textContent = nextMatch.location || 'Da definire';
     } else {
-        document.getElementById('prossima-data').textContent = 'Nessuna partita programmata';
-        document.getElementById('prossime-squadre').textContent = '-';
+        dataElement.textContent = 'Nessuna partita programmata';
+        squadreElement.textContent = '-';
+        luogoElement.textContent = '-';
     }
 }
 
