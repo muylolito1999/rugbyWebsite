@@ -15,16 +15,118 @@ document.addEventListener('DOMContentLoaded', function() {
     const hasTeams = localStorage.getItem('rugbyTeams') !== null;
     console.log('Dati disponibili:', { matches: hasMatches, teams: hasTeams });
     
-    // Inizializza il form di iscrizione
-    initForm();
-    
-    // Inizializza il calendario
-    const calendar = initCalendar();
-    if (calendar) {
+    // Inizializzazione EmailJS
+    try {
+        emailjs.init("_tgxLcltA1eWDBu-W");
+        console.log('EmailJS inizializzato con successo');
+    } catch (error) {
+        console.error('Errore durante l\'inizializzazione di EmailJS:', error);
+    }
+
+    // Inizializzazione del calendario
+    const calendarEl = document.getElementById('calendar');
+    if (calendarEl) {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'it',
+            initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listMonth'
+            },
+            views: {
+                dayGridMonth: {
+                    titleFormat: { year: 'numeric', month: 'long' }
+                },
+                listMonth: {
+                    titleFormat: { year: 'numeric', month: 'long' }
+                }
+            },
+            height: 'auto',
+            expandRows: true,
+            windowResize: function(view) {
+                if (window.innerWidth < 768) {
+                    calendar.changeView('listMonth');
+                } else {
+                    calendar.changeView('dayGridMonth');
+                }
+            },
+            eventClick: function(info) {
+                // Reindirizza alla pagina dei dettagli della partita
+                window.location.href = 'partita.html?id=' + info.event.id;
+            },
+            events: function(fetchInfo, successCallback, failureCallback) {
+                // Ottiene le partite dal localStorage
+                const matches = JSON.parse(localStorage.getItem('rugbyMatches')) || [];
+                const teams = JSON.parse(localStorage.getItem('rugbyTeams')) || [];
+                
+                const events = matches.map(match => {
+                    const homeTeam = teams.find(team => team.id === match.homeTeam) || { name: 'Squadra Sconosciuta' };
+                    const awayTeam = teams.find(team => team.id === match.awayTeam) || { name: 'Squadra Sconosciuta' };
+                    
+                    // Calcola il punteggio totale
+                    let homeScore = match.homeScore;
+                    let awayScore = match.awayScore;
+                    
+                    if (match.rugbyDetails) {
+                        const homeDetails = match.rugbyDetails.home;
+                        const awayDetails = match.rugbyDetails.away;
+                        
+                        homeScore = (homeDetails.periodo1.mete + homeDetails.periodo2.mete) * 5 + 
+                                  (homeDetails.periodo1.trasformazioni + homeDetails.periodo2.trasformazioni) * 2 + 
+                                  (homeDetails.periodo1.punizioni + homeDetails.periodo2.punizioni) * 3 + 
+                                  (homeDetails.periodo1.drop + homeDetails.periodo2.drop) * 3;
+                        
+                        awayScore = (awayDetails.periodo1.mete + awayDetails.periodo2.mete) * 5 + 
+                                  (awayDetails.periodo1.trasformazioni + awayDetails.periodo2.trasformazioni) * 2 + 
+                                  (awayDetails.periodo1.punizioni + awayDetails.periodo2.punizioni) * 3 + 
+                                  (awayDetails.periodo1.drop + awayDetails.periodo2.drop) * 3;
+                    }
+                    
+                    // Crea il titolo con il punteggio se la partita è stata giocata
+                    let title = `${homeTeam.name} vs ${awayTeam.name}`;
+                    if (match.played) {
+                        title += ` (${homeScore} - ${awayScore})`;
+                        if (match.status === 'sospesa') {
+                            title += ' [SOSPESA]';
+                        }
+                    }
+                    
+                    // Colori per le partite in base allo stato
+                    let bgColor, borderColor;
+                    
+                    if (match.played) {
+                        if (match.status === 'sospesa') {
+                            bgColor = '#dc3545';     // Rosso per partite sospese
+                            borderColor = '#b21e2d';
+                        } else {
+                            bgColor = '#28a745';     // Verde per partite giocate
+                            borderColor = '#218838';
+                        }
+                    } else {
+                        // Blu scuro per partite future
+                        bgColor = '#003366';
+                        borderColor = '#002244';
+                    }
+                    
+                    return {
+                        id: match.id,
+                        title: title,
+                        start: match.date,
+                        backgroundColor: bgColor,
+                        textColor: '#ffffff', // Testo bianco per massimo contrasto
+                        borderColor: borderColor,
+                        url: null // Non usare l'url predefinito, ma gestire il click con eventClick
+                    };
+                });
+                
+                successCallback(events);
+            }
+        });
         calendar.render();
         console.log('Calendario inizializzato e renderizzato');
     } else {
-        console.log('Calendario non inizializzato (elemento non trovato)');
+        console.log('Elemento calendar non trovato nel DOM');
     }
     
     // Carica la classifica
@@ -36,6 +138,80 @@ document.addEventListener('DOMContentLoaded', function() {
     // Aggiorna le informazioni del prossimo incontro
     updateNextMatch();
     console.log('Funzione updateNextMatch() eseguita');
+
+    // Gestione del form di iscrizione
+    const formIscrizione = document.getElementById('form-iscrizione');
+    
+    if (!formIscrizione) {
+        console.error('Form di iscrizione non trovato nel DOM');
+    } else {
+        console.log('Form di iscrizione trovato e configurato');
+        
+        formIscrizione.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('Form sottomesso, inizio processo di invio...');
+            
+            // Mostra un messaggio di caricamento
+            const submitButton = formIscrizione.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Invio in corso...';
+            submitButton.disabled = true;
+    
+            try {
+                // Log dei valori del form
+                const formData = {
+                    nomeSquadra: document.getElementById('nome-squadra').value,
+                    categoria: document.getElementById('categoria').value,
+                    email: document.getElementById('email').value,
+                    telefono: document.getElementById('telefono').value
+                };
+                console.log('Dati del form raccolti:', formData);
+    
+                // Prepara i dati per l'email
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('it-IT', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                console.log('Data formattata:', dateStr);
+    
+                const templateParams = {
+                    to_email: 'muylolito1999@gmail.com',
+                    nomeSquadra: formData.nomeSquadra,
+                    categoria: formData.categoria,
+                    email: formData.email,
+                    telefono: formData.telefono,
+                    date: dateStr
+                };
+                console.log('Parametri template preparati:', templateParams);
+    
+                // Invia l'email usando il tuo servizio e template
+                console.log('Tentativo di invio email con service_4zm2m4t e template_slk1ikr...');
+                const response = await emailjs.send('service_4zm2m4t', 'template_slk1ikr', templateParams);
+                console.log('Risposta da EmailJS:', response);
+                
+                alert('Iscrizione inviata con successo!');
+                formIscrizione.reset();
+                console.log('Form resettato dopo invio con successo');
+            } catch (error) {
+                console.error('Dettagli completi dell\'errore:', {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    error: error
+                });
+                alert('Si è verificato un errore durante l\'invio dei dati. Riprova più tardi.\nErrore: ' + error.message);
+            } finally {
+                // Ripristina il pulsante
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                console.log('Pulsante di submit ripristinato');
+            }
+        });
+    }
 });
 
 // Funzione per aggiornare le informazioni sul prossimo incontro
@@ -60,10 +236,17 @@ function updateNextMatch() {
         .filter(match => !match.played && new Date(match.date) > now)
         .sort((a, b) => new Date(a.date) - new Date(b.date));
     
+    console.log(`Trovate ${upcomingMatches.length} partite future`);
+    
     if (upcomingMatches.length > 0) {
         const nextMatch = upcomingMatches[0];
         const homeTeam = teams.find(team => team.id === nextMatch.homeTeam) || { name: 'Squadra sconosciuta' };
         const awayTeam = teams.find(team => team.id === nextMatch.awayTeam) || { name: 'Squadra sconosciuta' };
+        
+        console.log('Prossimo incontro:', nextMatch);
+        console.log('Squadra casa:', homeTeam.name);
+        console.log('Squadra ospite:', awayTeam.name);
+        console.log('Luogo:', nextMatch.location || 'Da definire');
         
         const matchDate = new Date(nextMatch.date);
         dataElement.textContent = matchDate.toLocaleDateString('it-IT', {
@@ -88,7 +271,10 @@ function updateNextMatch() {
 // Carica la classifica
 function loadStandings() {
     const standingsTable = document.getElementById('standings-table');
-    if (!standingsTable) return;
+    if (!standingsTable) {
+        console.log('Elemento standings-table non trovato nella pagina');
+        return;
+    }
     
     const standings = JSON.parse(localStorage.getItem('rugbyStandings')) || [];
     
@@ -154,7 +340,10 @@ function loadContents() {
     const newsContainer = document.getElementById('news-container');
     const noNewsMessage = document.getElementById('no-news-message');
     
-    if (!newsContainer) return;
+    if (!newsContainer) {
+        console.log('Elemento news-container non trovato nella pagina');
+        return;
+    }
     
     const contents = JSON.parse(localStorage.getItem('rugbyContents')) || [];
     
@@ -166,10 +355,10 @@ function loadContents() {
     
     // Mostra il messaggio se non ci sono contenuti
     if (visibleContents.length === 0) {
-        noNewsMessage.classList.remove('d-none');
+        if (noNewsMessage) noNewsMessage.classList.remove('d-none');
         return;
     } else {
-        noNewsMessage.classList.add('d-none');
+        if (noNewsMessage) noNewsMessage.classList.add('d-none');
     }
     
     // Rimuovi i contenuti esistenti tranne il messaggio di nessuna news
