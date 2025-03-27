@@ -12,34 +12,37 @@
     <link href="css/style.css" rel="stylesheet">
     <style>
         .match-header {
-            background-color: #f8f9fa;
+            background-color: var(--light-blue);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 30px;
-            border: 1px solid #ddd;
+            border: 2px solid var(--primary-blue);
         }
         .team-name {
             font-size: 24px;
             font-weight: bold;
+            color: var(--primary-blue);
         }
         .score {
             font-size: 46px;
             font-weight: bold;
+            color: var(--primary-blue);
         }
         .vs {
             font-size: 24px;
-            color: #888;
+            color: var(--primary-yellow);
+            font-weight: bold;
         }
         .match-info {
             margin-top: 10px;
-            color: #666;
+            color: var(--primary-blue);
         }
         .rugby-stats-table th {
-            background-color: #1a237e;
+            background-color: var(--primary-blue);
             color: white;
         }
         .rugby-stats-table .total-row {
-            background-color: #f0f0f0;
+            background-color: var(--light-blue);
             font-weight: bold;
         }
         .match-status {
@@ -48,12 +51,29 @@
             font-weight: bold;
         }
         .status-disputata {
-            background-color: #d4edda;
-            color: #155724;
+            background-color: var(--primary-yellow);
+            color: var(--primary-blue);
         }
         .status-sospesa {
             background-color: #f8d7da;
             color: #721c24;
+        }
+        .card-header.bg-primary {
+            background-color: var(--primary-blue) !important;
+        }
+        .card-header.bg-danger {
+            background-color: var(--primary-blue) !important;
+        }
+        .list-group-item {
+            border-left: 3px solid var(--primary-blue);
+        }
+        .btn-outline-primary {
+            color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
         }
     </style>
 </head>

@@ -9,18 +9,57 @@
     <!-- Custom CSS -->
     <link href="css/style.css" rel="stylesheet">
     <style>
+        body {
+            background-color: var(--light-blue);
+        }
         .login-container {
             max-width: 400px;
             margin: 100px auto;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             background-color: white;
+            border: 2px solid var(--primary-blue);
         }
         .login-logo {
             text-align: center;
-            margin-bottom: 20px;
-            color: #1a237e;
+            margin-bottom: 30px;
+        }
+        .login-logo h2 {
+            color: var(--primary-blue);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .login-logo p {
+            color: var(--primary-yellow);
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .form-label {
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(26, 35, 126, 0.25);
+        }
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background-color: var(--secondary-blue);
+            border-color: var(--secondary-blue);
+        }
+        .mt-3 a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .mt-3 a:hover {
+            color: var(--secondary-blue);
         }
     </style>
 </head>

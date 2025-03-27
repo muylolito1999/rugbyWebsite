@@ -1,87 +1,221 @@
+:root {
+    --primary-blue: #1a237e;
+    --secondary-blue: #283593;
+    --primary-yellow: #ffd700;
+    --secondary-yellow: #ffeb3b;
+    --light-blue: #e8eaf6;
+    --dark-blue: #0d47a1;
+}
+
+/* Stili generali */
 body {
-    background-color: #f8f9fa;
+    background-color: #f5f5f5;
 }
 
-.navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+/* Navbar */
+.navbar-dark {
+    background-color: var(--primary-blue) !important;
 }
 
+.navbar-brand {
+    color: var(--primary-yellow) !important;
+    font-weight: bold;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-yellow) !important;
+}
+
+.nav-link.active {
+    color: var(--primary-yellow) !important;
+    font-weight: bold;
+}
+
+/* Card */
 .card {
-    box-shadow: 0 2px 4px rgba(0,0,0,.05);
-    transition: transform 0.2s;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
 }
 
 .card:hover {
     transform: translateY(-5px);
 }
 
-#form-iscrizione {
-    max-width: 600px;
-    margin: 0 auto;
+.card-header {
+    background-color: var(--primary-blue);
+    color: white;
 }
 
+/* Bottoni */
 .btn-primary {
-    background-color: #1a237e;
-    border-color: #1a237e;
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
 }
 
 .btn-primary:hover {
-    background-color: #0d47a1;
-    border-color: #0d47a1;
+    background-color: var(--secondary-blue);
+    border-color: var(--secondary-blue);
 }
 
+.btn-outline-primary {
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+/* Footer */
+footer {
+    background-color: var(--primary-blue) !important;
+}
+
+footer a {
+    color: var(--primary-yellow) !important;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--secondary-yellow) !important;
+}
+
+/* Sezioni */
 section {
-    padding: 2rem 0;
+    padding: 40px 0;
 }
 
-h2 {
-    color: #1a237e;
-    margin-bottom: 1.5rem;
+.section-heading {
+    color: var(--primary-blue);
+    margin-bottom: 30px;
 }
 
-.card-title {
-    color: #1a237e;
+/* Tabelle */
+.table thead th {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--light-blue);
+}
+
+/* Form */
+.form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.2rem rgba(26, 35, 126, 0.25);
+}
+
+/* Calendario */
+.fc-event {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.fc-button-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.fc-button-primary:hover {
+    background-color: var(--secondary-blue);
+    border-color: var(--secondary-blue);
+}
+
+/* Badge e etichette */
+.badge-primary {
+    background-color: var(--primary-blue);
+}
+
+/* Link */
+a {
+    color: var(--primary-blue);
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--secondary-blue);
+    text-decoration: none;
+}
+
+/* Titoli */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-blue);
+}
+
+/* Effetti hover */
+.card:hover .card-title {
+    color: var(--primary-blue);
+}
+
+/* Stili per la pagina di login */
+.login-container {
+    background-color: white;
+    border: 2px solid var(--primary-blue);
+}
+
+.login-logo h2 {
+    color: var(--primary-blue);
+}
+
+/* Stili per la pagina della partita */
+.match-header {
+    background-color: var(--light-blue);
+    border: 2px solid var(--primary-blue);
+}
+
+.team-name {
+    color: var(--primary-blue);
+}
+
+.score {
+    color: var(--primary-blue);
+}
+
+.match-status {
+    background-color: var(--primary-yellow);
+    color: var(--primary-blue);
+}
+
+/* Stili per la galleria */
+.card-img-top {
+    border-bottom: 3px solid var(--primary-blue);
+}
+
+/* Stili per le news */
+.news-item {
+    border-left: 4px solid var(--primary-blue);
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+/* Stili per la classifica */
+.standings-table tr:hover {
+    background-color: var(--light-blue);
+}
+
+/* Stili per il form di iscrizione */
+#form-iscrizione {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Stili per il calendario */
 #calendar {
-    margin: 20px 0;
+    background-color: white;
     padding: 20px;
-    background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,.05);
-    width: 100%;
-    height: auto;
-    margin: 0 auto;
-}
-
-.fc-event {
-    background-color: #1a237e;
-    border-color: #1a237e;
-}
-
-.fc-button-primary {
-    background-color: #1a237e !important;
-    border-color: #1a237e !important;
-}
-
-/* Stili per la galleria */
-.gallery-card {
-    transition: transform 0.3s ease;
-}
-
-.gallery-card:hover {
-    transform: translateY(-10px);
-}
-
-.gallery-card img {
-    height: 250px;
-    object-fit: cover;
-}
-
-.card-img-top {
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Stili per il calendario responsive */
